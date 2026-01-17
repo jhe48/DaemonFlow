@@ -48,14 +48,12 @@ Plans:
 ### Phase 3: File Watcher
 **Goal**: Daemon detects meaningful file changes (not noise like .git or node_modules)
 **Depends on**: Phase 1
-**Research**: Likely (fsnotify patterns, debouncing)
-**Research topics**: fsnotify library, ignore patterns, debouncing rapid changes
-**Plans**: TBD
+**Research**: Unlikely (fsnotify is standard Go library, patterns established in Phase 2)
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: File system watcher setup with ignore patterns
-- [ ] 03-02: Change aggregation and debouncing
-- [ ] 03-03: Activity scoring for file changes
+- [ ] 03-01: fsnotify watcher + ignore patterns + FileChange events
+- [ ] 03-02: Debouncing + daemon integration
 
 ### Phase 4: Task Tracking
 **Goal**: Daemon monitors task file for checkbox completions
@@ -121,7 +119,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-17 |
 | 2. Git Monitoring | 2/2 | Complete | 2026-01-17 |
-| 3. File Watcher | 0/3 | Not started | - |
+| 3. File Watcher | 0/2 | Not started | - |
 | 4. Task Tracking | 0/2 | Not started | - |
 | 5. Freedom Clock | 0/3 | Not started | - |
 | 6. TUI Foundation | 0/3 | Not started | - |
