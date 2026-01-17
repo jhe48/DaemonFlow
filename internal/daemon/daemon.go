@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,12 +9,18 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
+	"github.com/jackyhe0402/daemonflow/internal/activity"
 	"github.com/jackyhe0402/daemonflow/internal/config"
+	"github.com/jackyhe0402/daemonflow/internal/git"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
 )
+
+// MaxRecentActivities is the maximum number of activities to keep in memory
+const MaxRecentActivities = 50
 
 // Daemon manages the DaemonFlow background process
 type Daemon struct {
@@ -24,8 +31,13 @@ type Daemon struct {
 	Foreground   bool
 	Config       *config.Config
 	ipcServer    *ipc.Server
+	gitMonitor   *git.Monitor
 	startTime    time.Time
 	shutdownChan chan struct{}
+
+	// Activity tracking
+	recentActivities []activity.Activity
+	activityMu       sync.RWMutex
 }
 
 // New creates a new Daemon instance with default paths
@@ -110,6 +122,7 @@ func (d *Daemon) runForeground() error {
 	// Record start time
 	d.startTime = time.Now()
 	d.shutdownChan = make(chan struct{})
+	d.recentActivities = make([]activity.Activity, 0, MaxRecentActivities)
 
 	// Start IPC server
 	d.ipcServer = ipc.NewServer(d.Config.SocketPath, d)
@@ -117,6 +130,14 @@ func (d *Daemon) runForeground() error {
 		return fmt.Errorf("failed to start IPC server: %w", err)
 	}
 	defer d.ipcServer.Stop()
+
+	// Start git monitor if watch dir is a git repo
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := d.startGitMonitor(ctx); err != nil {
+		log.Printf("Git monitor not started: %v", err)
+	}
 
 	d.Running = true
 	log.Printf("DaemonFlow daemon running (PID: %d)", pid)
@@ -136,15 +157,97 @@ func (d *Daemon) runForeground() error {
 		case sig := <-sigChan:
 			log.Printf("Received signal %v, shutting down...", sig)
 			d.Running = false
+			d.stopGitMonitor()
 			return nil
 		case <-d.shutdownChan:
 			log.Printf("Received shutdown request via IPC, shutting down...")
 			d.Running = false
+			d.stopGitMonitor()
 			return nil
 		case <-ticker.C:
 			log.Println("daemon running")
 		}
 	}
+}
+
+// startGitMonitor initializes and starts the git monitor if applicable
+func (d *Daemon) startGitMonitor(ctx context.Context) error {
+	// Find git root from watch directory
+	gitRoot, err := git.FindGitRoot(d.Config.WatchDir)
+	if err != nil {
+		return fmt.Errorf("watch directory is not a git repository: %w", err)
+	}
+
+	// Create repo and monitor
+	repo := git.NewRepo(gitRoot)
+	if !repo.IsGitRepo() {
+		return fmt.Errorf("not a valid git repository: %s", gitRoot)
+	}
+
+	d.gitMonitor = git.NewMonitor(repo, d.Config.Git.PollInterval)
+	d.gitMonitor.AddListener(d)
+
+	if err := d.gitMonitor.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start git monitor: %w", err)
+	}
+
+	log.Printf("Git monitor watching: %s (poll every %v)", gitRoot, d.Config.Git.PollInterval)
+	return nil
+}
+
+// stopGitMonitor stops the git monitor if running
+func (d *Daemon) stopGitMonitor() {
+	if d.gitMonitor != nil {
+		d.gitMonitor.Stop()
+	}
+}
+
+// OnActivity implements activity.ActivityListener
+func (d *Daemon) OnActivity(act activity.Activity) {
+	d.activityMu.Lock()
+	defer d.activityMu.Unlock()
+
+	// Add to recent activities
+	d.recentActivities = append(d.recentActivities, act)
+
+	// Trim to max size
+	if len(d.recentActivities) > MaxRecentActivities {
+		d.recentActivities = d.recentActivities[len(d.recentActivities)-MaxRecentActivities:]
+	}
+}
+
+// GetRecentActivities returns the most recent N activities
+func (d *Daemon) GetRecentActivities(limit int) []activity.Activity {
+	d.activityMu.RLock()
+	defer d.activityMu.RUnlock()
+
+	if limit <= 0 || limit > len(d.recentActivities) {
+		limit = len(d.recentActivities)
+	}
+
+	// Return most recent activities (last N items)
+	start := len(d.recentActivities) - limit
+	if start < 0 {
+		start = 0
+	}
+
+	result := make([]activity.Activity, limit)
+	copy(result, d.recentActivities[start:])
+	return result
+}
+
+// GetRecentActivitiesData returns recent activities in IPC-friendly format
+func (d *Daemon) GetRecentActivitiesData(limit int) []ipc.ActivityData {
+	activities := d.GetRecentActivities(limit)
+	data := make([]ipc.ActivityData, len(activities))
+	for i, act := range activities {
+		data[i] = ipc.ActivityData{
+			Type:      string(act.Type),
+			Timestamp: act.Timestamp.Format(time.RFC3339),
+			Details:   act.Details,
+		}
+	}
+	return data
 }
 
 // GetUptime returns the number of seconds the daemon has been running

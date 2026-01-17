@@ -9,10 +9,11 @@ import (
 
 // Request types for IPC communication
 const (
-	RequestTypePing     = "ping"      // Health check
-	RequestTypeStatus   = "status"    // Get daemon status
-	RequestTypeStop     = "stop"      // Request graceful shutdown
-	RequestTypeGetState = "get_state" // Get current productivity state (for TUI)
+	RequestTypePing          = "ping"           // Health check
+	RequestTypeStatus        = "status"         // Get daemon status
+	RequestTypeStop          = "stop"           // Request graceful shutdown
+	RequestTypeGetState      = "get_state"      // Get current productivity state (for TUI)
+	RequestTypeGetActivities = "get_activities" // Get recent activity events
 )
 
 // Request represents an IPC request message
@@ -41,6 +42,23 @@ type StateResponse struct {
 	EarnedToday    float64 `json:"earned_today"`
 	CurrentSession float64 `json:"current_session"`
 	ActiveTask     string  `json:"active_task,omitempty"`
+}
+
+// GetActivitiesRequest contains parameters for getting activities
+type GetActivitiesRequest struct {
+	Limit int `json:"limit"` // Max number of activities to return (default 10)
+}
+
+// ActivityData represents an activity for IPC transfer
+type ActivityData struct {
+	Type      string            `json:"type"`
+	Timestamp string            `json:"timestamp"` // ISO 8601 format
+	Details   map[string]string `json:"details"`
+}
+
+// GetActivitiesResponse contains recent activities
+type GetActivitiesResponse struct {
+	Activities []ActivityData `json:"activities"`
 }
 
 // WriteMessage writes a length-prefixed JSON message to the writer

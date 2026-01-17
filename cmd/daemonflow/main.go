@@ -123,7 +123,66 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(startCmd, stopCmd, statusCmd)
+	// Activities command
+	var activitiesLimit int
+	var activitiesCmd = &cobra.Command{
+		Use:   "activities",
+		Short: "Show recent git activities",
+		Long:  `Display recent git activities detected by the daemon (commits, branch switches).`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d := daemon.New()
+			socketPath := d.GetSocketPath()
+
+			// Check if socket exists
+			if _, err := os.Stat(socketPath); os.IsNotExist(err) {
+				fmt.Println("DaemonFlow daemon is not running")
+				return nil
+			}
+
+			// Get activities via IPC
+			client := ipc.NewClient(socketPath)
+			activities, err := client.GetActivities(activitiesLimit)
+			if err != nil {
+				fmt.Printf("Failed to get activities: %v\n", err)
+				return nil
+			}
+
+			if len(activities.Activities) == 0 {
+				fmt.Println("No activities recorded yet")
+				return nil
+			}
+
+			fmt.Println("Recent Git Activities")
+			fmt.Println("---------------------")
+			for _, act := range activities.Activities {
+				// Format timestamp
+				ts, _ := time.Parse(time.RFC3339, act.Timestamp)
+				timeStr := ts.Format("15:04:05")
+
+				switch act.Type {
+				case "git_commit":
+					hash := act.Details["hash"]
+					if len(hash) > 7 {
+						hash = hash[:7]
+					}
+					msg := act.Details["message"]
+					if len(msg) > 50 {
+						msg = msg[:47] + "..."
+					}
+					fmt.Printf("[%s] COMMIT %s: %s\n", timeStr, hash, msg)
+				case "git_branch_switch":
+					fmt.Printf("[%s] BRANCH %s -> %s\n", timeStr, act.Details["old_branch"], act.Details["new_branch"])
+				default:
+					fmt.Printf("[%s] %s\n", timeStr, act.Type)
+				}
+			}
+
+			return nil
+		},
+	}
+	activitiesCmd.Flags().IntVarP(&activitiesLimit, "limit", "n", 10, "Maximum number of activities to show")
+
+	rootCmd.AddCommand(startCmd, stopCmd, statusCmd, activitiesCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

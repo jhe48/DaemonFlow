@@ -1,6 +1,7 @@
 package ipc
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -13,6 +14,7 @@ type DaemonInterface interface {
 	GetUptime() int64
 	GetWatchDir() string
 	RequestShutdown()
+	GetRecentActivitiesData(limit int) []ActivityData
 }
 
 // Server handles IPC connections from clients
@@ -133,6 +135,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleStop()
 	case RequestTypeGetState:
 		resp, err = s.handleGetState()
+	case RequestTypeGetActivities:
+		resp, err = s.handleGetActivities(req)
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -178,6 +182,21 @@ func (s *Server) handleGetState() (*Response, error) {
 		ActiveTask:     "",
 	}
 	return NewSuccessResponse(state)
+}
+
+// handleGetActivities handles get_activities requests
+func (s *Server) handleGetActivities(req Request) (*Response, error) {
+	// Parse request payload for limit
+	limit := 10 // default
+	if req.Payload != nil {
+		var actReq GetActivitiesRequest
+		if err := json.Unmarshal(req.Payload, &actReq); err == nil && actReq.Limit > 0 {
+			limit = actReq.Limit
+		}
+	}
+
+	activities := s.daemon.GetRecentActivitiesData(limit)
+	return NewSuccessResponse(GetActivitiesResponse{Activities: activities})
 }
 
 // SocketPath returns the socket path for this server

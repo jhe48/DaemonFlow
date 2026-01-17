@@ -129,3 +129,25 @@ func (c *Client) SocketPath() string {
 func (c *Client) IsConnected() bool {
 	return c.Ping() == nil
 }
+
+// GetActivities retrieves recent activities from the daemon
+func (c *Client) GetActivities(limit int) (*GetActivitiesResponse, error) {
+	payload, _ := json.Marshal(GetActivitiesRequest{Limit: limit})
+	req := Request{
+		Type:    RequestTypeGetActivities,
+		Payload: payload,
+	}
+	resp, err := c.Send(req)
+	if err != nil {
+		return nil, err
+	}
+	if !resp.Success {
+		return nil, fmt.Errorf("get_activities request failed: %s", resp.Error)
+	}
+
+	var activities GetActivitiesResponse
+	if err := json.Unmarshal(resp.Data, &activities); err != nil {
+		return nil, fmt.Errorf("failed to parse activities response: %w", err)
+	}
+	return &activities, nil
+}
