@@ -3,6 +3,8 @@ package git
 import (
 	"context"
 	"log"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,8 +20,9 @@ type Monitor struct {
 	pollInterval time.Duration
 
 	// Last known state
-	lastCommit string
-	lastBranch string
+	lastCommit      string
+	lastBranch      string
+	lastStagedCount int
 
 	// Listeners to notify on changes
 	listeners []activity.ActivityListener
@@ -94,7 +97,14 @@ func (m *Monitor) initializeState() error {
 	}
 	m.lastBranch = branch
 
-	log.Printf("Git monitor initialized: commit=%s, branch=%s", shortenHash(m.lastCommit), m.lastBranch)
+	stagedCount, err := m.repo.GetStagedFileCount()
+	if err != nil {
+		log.Printf("Git monitor: could not get staged count: %v", err)
+		stagedCount = 0
+	}
+	m.lastStagedCount = stagedCount
+
+	log.Printf("Git monitor initialized: commit=%s, branch=%s, staged=%d", shortenHash(m.lastCommit), m.lastBranch, m.lastStagedCount)
 	return nil
 }
 
@@ -124,8 +134,10 @@ func (m *Monitor) checkForChanges() {
 		currentCommit = ""
 	}
 
+	commitDetected := false
 	if currentCommit != "" && currentCommit != m.lastCommit && m.lastCommit != "" {
 		// New commit detected
+		commitDetected = true
 		message, _ := m.repo.GetLastCommitMessage()
 
 		act := activity.NewActivity(activity.GitCommit, map[string]string{
@@ -152,6 +164,36 @@ func (m *Monitor) checkForChanges() {
 		log.Printf("Git activity: branch switch %s -> %s", m.lastBranch, currentBranch)
 	}
 	m.lastBranch = currentBranch
+
+	// Check for staged file changes
+	// Reset staged count if a commit was just detected (staged files became the commit)
+	if commitDetected {
+		m.lastStagedCount = 0
+	}
+
+	stagedFiles, err := m.repo.GetStagedFiles()
+	if err != nil {
+		// Silent - error getting staged files
+		return
+	}
+	currentStagedCount := len(stagedFiles)
+
+	// Only emit event when staged count INCREASES (not on every poll)
+	if currentStagedCount > m.lastStagedCount {
+		// Build file list (up to 5 files)
+		fileList := stagedFiles
+		if len(fileList) > 5 {
+			fileList = fileList[:5]
+		}
+
+		act := activity.NewActivity(activity.GitStage, map[string]string{
+			"files_staged": strconv.Itoa(currentStagedCount),
+			"file_list":    strings.Join(fileList, ", "),
+		})
+		m.notifyListeners(act)
+		log.Printf("Git activity: staged %d files - %s", currentStagedCount, strings.Join(fileList, ", "))
+	}
+	m.lastStagedCount = currentStagedCount
 }
 
 // notifyListeners sends an activity to all registered listeners

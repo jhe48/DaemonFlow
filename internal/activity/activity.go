@@ -10,6 +10,8 @@ const (
 	GitCommit ActivityType = "git_commit"
 	// GitBranchSwitch indicates the git branch was changed
 	GitBranchSwitch ActivityType = "git_branch_switch"
+	// GitStage indicates files were staged for commit
+	GitStage ActivityType = "git_stage"
 	// FileChange indicates files were modified (future use)
 	FileChange ActivityType = "file_change"
 	// TaskComplete indicates a task was completed (future use)
