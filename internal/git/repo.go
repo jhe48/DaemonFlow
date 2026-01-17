@@ -99,6 +99,44 @@ func (r *Repo) GetLastCommitMessage() (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
+// GetStagedFiles returns the list of currently staged files
+func (r *Repo) GetStagedFiles() ([]string, error) {
+	cmd := exec.Command("git", "diff", "--cached", "--name-only")
+	cmd.Dir = r.path
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get staged files: %w", err)
+	}
+
+	// Handle empty result (no staged files)
+	trimmed := strings.TrimSpace(string(output))
+	if trimmed == "" {
+		return []string{}, nil
+	}
+
+	// Split into individual file paths
+	files := strings.Split(trimmed, "\n")
+	return files, nil
+}
+
+// GetStagedFileCount returns the number of currently staged files
+func (r *Repo) GetStagedFileCount() (int, error) {
+	files, err := r.GetStagedFiles()
+	if err != nil {
+		return 0, err
+	}
+	return len(files), nil
+}
+
+// HasStagedChanges returns true if there are any staged changes
+func (r *Repo) HasStagedChanges() (bool, error) {
+	count, err := r.GetStagedFileCount()
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 // FindGitRoot walks up from the given path to find the Git repository root
 // Returns the repository root path or an error if not in a Git repository
 func FindGitRoot(path string) (string, error) {
