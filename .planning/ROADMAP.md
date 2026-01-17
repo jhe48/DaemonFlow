@@ -15,7 +15,7 @@ None
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation** - Go daemon skeleton with IPC socket (Complete)
-- [ ] **Phase 2: Git Monitoring** - Track commits, staged changes, branch switches
+- [x] **Phase 2: Git Monitoring** - Track commits, staged changes, branch switches (Complete)
 - [ ] **Phase 3: File Watcher** - Monitor file changes in project directory
 - [ ] **Phase 4: Task Tracking** - Checkbox-style task completion monitoring
 - [ ] **Phase 5: Freedom Clock** - Earning formula and countdown logic
@@ -43,7 +43,7 @@ Plans:
 
 Plans:
 - [x] 02-01: Git repo detection + commit/branch monitoring + daemon integration - Completed 2026-01-17
-- [ ] 02-02: Staged changes detection
+- [x] 02-02: Staged changes detection - Completed 2026-01-17
 
 ### Phase 3: File Watcher
 **Goal**: Daemon detects meaningful file changes (not noise like .git or node_modules)
@@ -120,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-17 |
-| 2. Git Monitoring | 1/2 | In progress | - |
+| 2. Git Monitoring | 2/2 | Complete | 2026-01-17 |
 | 3. File Watcher | 0/3 | Not started | - |
 | 4. Task Tracking | 0/2 | Not started | - |
 | 5. Freedom Clock | 0/3 | Not started | - |
