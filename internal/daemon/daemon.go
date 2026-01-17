@@ -12,16 +12,20 @@ import (
 	"time"
 
 	"github.com/jackyhe0402/daemonflow/internal/config"
+	"github.com/jackyhe0402/daemonflow/internal/ipc"
 )
 
 // Daemon manages the DaemonFlow background process
 type Daemon struct {
-	Running    bool
-	PIDFile    string
-	DataDir    string
-	ConfigPath string
-	Foreground bool
-	Config     *config.Config
+	Running      bool
+	PIDFile      string
+	DataDir      string
+	ConfigPath   string
+	Foreground   bool
+	Config       *config.Config
+	ipcServer    *ipc.Server
+	startTime    time.Time
+	shutdownChan chan struct{}
 }
 
 // New creates a new Daemon instance with default paths
@@ -103,9 +107,21 @@ func (d *Daemon) runForeground() error {
 	}
 	defer os.Remove(d.PIDFile)
 
+	// Record start time
+	d.startTime = time.Now()
+	d.shutdownChan = make(chan struct{})
+
+	// Start IPC server
+	d.ipcServer = ipc.NewServer(d.Config.SocketPath, d)
+	if err := d.ipcServer.Start(); err != nil {
+		return fmt.Errorf("failed to start IPC server: %w", err)
+	}
+	defer d.ipcServer.Stop()
+
 	d.Running = true
 	log.Printf("DaemonFlow daemon running (PID: %d)", pid)
 	log.Printf("Config: watch_dir=%s, log_level=%s", d.Config.WatchDir, d.Config.LogLevel)
+	log.Printf("IPC socket: %s", d.Config.SocketPath)
 
 	// Set up signal handling
 	sigChan := make(chan os.Signal, 1)
@@ -121,10 +137,44 @@ func (d *Daemon) runForeground() error {
 			log.Printf("Received signal %v, shutting down...", sig)
 			d.Running = false
 			return nil
+		case <-d.shutdownChan:
+			log.Printf("Received shutdown request via IPC, shutting down...")
+			d.Running = false
+			return nil
 		case <-ticker.C:
 			log.Println("daemon running")
 		}
 	}
+}
+
+// GetUptime returns the number of seconds the daemon has been running
+func (d *Daemon) GetUptime() int64 {
+	return int64(time.Since(d.startTime).Seconds())
+}
+
+// GetWatchDir returns the configured watch directory
+func (d *Daemon) GetWatchDir() string {
+	if d.Config != nil {
+		return d.Config.WatchDir
+	}
+	return ""
+}
+
+// RequestShutdown requests a graceful daemon shutdown
+func (d *Daemon) RequestShutdown() {
+	if d.shutdownChan != nil {
+		close(d.shutdownChan)
+	}
+}
+
+// GetSocketPath returns the IPC socket path
+func (d *Daemon) GetSocketPath() string {
+	if d.Config != nil {
+		return d.Config.SocketPath
+	}
+	// Return default path if config not loaded
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".daemonflow", "daemonflow.sock")
 }
 
 // Stop stops the running daemon
