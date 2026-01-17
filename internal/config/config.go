@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -19,8 +20,17 @@ type Config struct {
 	// SocketPath is the IPC socket location for daemon communication
 	SocketPath string `yaml:"socket_path"`
 
+	// Git holds git monitoring configuration
+	Git GitConfig `yaml:"git"`
+
 	// Earning holds Freedom Clock weights (placeholder for Phase 5)
 	Earning EarningConfig `yaml:"earning"`
+}
+
+// GitConfig holds git monitoring settings
+type GitConfig struct {
+	// PollInterval is how often to check for git changes
+	PollInterval time.Duration `yaml:"poll_interval"`
 }
 
 // EarningConfig holds Freedom Clock earning weights (placeholder for Phase 5)
@@ -48,6 +58,9 @@ func DefaultConfig() *Config {
 		WatchDir:   cwd,
 		LogLevel:   "info",
 		SocketPath: filepath.Join(homeDir, ".daemonflow", "daemonflow.sock"),
+		Git: GitConfig{
+			PollInterval: 5 * time.Second,
+		},
 		Earning: EarningConfig{
 			BaseRate:    1.0,
 			Multipliers: make(map[string]float64),
