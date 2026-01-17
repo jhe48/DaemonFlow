@@ -10,27 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 2 of 8 (Git Monitoring)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-17 — Phase 1 complete
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-17 — Completed 02-01-PLAN.md
 
-Progress: █░░░░░░░░░ 12%
+Progress: ██░░░░░░░░ 18%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 8 min
-- Total execution time: 0.27 hours
+- Total plans completed: 3
+- Average duration: 9 min
+- Total execution time: 0.43 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 2/2 ✓ | 16 min | 8 min |
+| 2. Git Monitoring | 1/2 | 10 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (8 min), 01-02 (8 min)
+- Last 5 plans: 01-01 (8 min), 01-02 (8 min), 02-01 (10 min)
 - Trend: —
 
 ## Accumulated Context
@@ -48,6 +49,9 @@ Recent decisions affecting current work:
 | 01-02 | JSON encoding for IPC | Simple, debuggable, sufficient perf |
 | 01-02 | Length-prefixed framing | 4-byte big-endian for message boundaries |
 | 01-02 | Request-response pattern | Simple connection model, no persistent state |
+| 02-01 | Git CLI over go-git | Simpler, lighter, shell out to git |
+| 02-01 | 5-second poll interval | Balance responsiveness and CPU, configurable |
+| 02-01 | Activity listener pattern | Extensible for future subscribers |
 
 ### Deferred Issues
 
@@ -60,5 +64,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-17
-Stopped at: Completed 01-02-PLAN.md
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None

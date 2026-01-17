@@ -42,7 +42,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Git repo detection + commit/branch monitoring + daemon integration
+- [x] 02-01: Git repo detection + commit/branch monitoring + daemon integration - Completed 2026-01-17
 - [ ] 02-02: Staged changes detection
 
 ### Phase 3: File Watcher
@@ -120,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-17 |
-| 2. Git Monitoring | 0/2 | Not started | - |
+| 2. Git Monitoring | 1/2 | In progress | - |
 | 3. File Watcher | 0/3 | Not started | - |
 | 4. Task Tracking | 0/2 | Not started | - |
 | 5. Freedom Clock | 0/3 | Not started | - |
