@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jackyhe0402/daemonflow/internal/daemon"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version = "0.1.0-dev"
+	version    = "0.1.0-dev"
+	foreground bool
 )
 
 func main() {
@@ -27,18 +29,22 @@ func main() {
 		Use:   "start",
 		Short: "Start the daemon",
 		Long:  `Start the DaemonFlow daemon in the background.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Starting DaemonFlow daemon...")
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d := daemon.New()
+			d.Foreground = foreground
+			return d.Start()
 		},
 	}
+	startCmd.Flags().BoolVar(&foreground, "foreground", false, "Run in foreground (don't daemonize)")
 
 	// Stop command
 	var stopCmd = &cobra.Command{
 		Use:   "stop",
 		Short: "Stop the daemon",
 		Long:  `Stop the running DaemonFlow daemon.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Stopping DaemonFlow daemon...")
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d := daemon.New()
+			return d.Stop()
 		},
 	}
 
@@ -47,8 +53,18 @@ func main() {
 		Use:   "status",
 		Short: "Check daemon status",
 		Long:  `Check if the DaemonFlow daemon is running.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Checking DaemonFlow daemon status...")
+		RunE: func(cmd *cobra.Command, args []string) error {
+			d := daemon.New()
+			running, pid, err := d.Status()
+			if err != nil {
+				return err
+			}
+			if running {
+				fmt.Printf("DaemonFlow daemon is running (PID: %d)\n", pid)
+			} else {
+				fmt.Println("DaemonFlow daemon is not running")
+			}
+			return nil
 		},
 	}
 
