@@ -1,0 +1,28 @@
+# DaemonFlow Configuration
+# Copy this file to ~/.daemonflow/config.yaml and customize
+
+# Directory to monitor for changes
+# Default: current working directory
+watch_dir: "."
+
+# Logging verbosity level
+# Options: debug, info, warn, error
+# Default: info
+log_level: "info"
+
+# IPC socket path for daemon communication
+# Default: ~/.daemonflow/daemonflow.sock
+socket_path: "~/.daemonflow/daemonflow.sock"
+
+# Earning configuration (Freedom Clock - Phase 5)
+# These settings control how work time translates to freedom time
+earning:
+  # Base earning rate (hours of freedom per hour of work)
+  base_rate: 1.0
+
+  # Category-specific multipliers
+  # Example: deep_work: 1.5 means deep work earns 1.5x base rate
+  multipliers:
+    deep_work: 1.5
+    meetings: 0.5
+    admin: 0.75

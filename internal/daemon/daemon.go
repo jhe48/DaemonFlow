@@ -10,15 +10,18 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/jackyhe0402/daemonflow/internal/config"
 )
 
 // Daemon manages the DaemonFlow background process
 type Daemon struct {
-	Running     bool
-	PIDFile     string
-	DataDir     string
-	ConfigPath  string
-	Foreground  bool
+	Running    bool
+	PIDFile    string
+	DataDir    string
+	ConfigPath string
+	Foreground bool
+	Config     *config.Config
 }
 
 // New creates a new Daemon instance with default paths
@@ -81,6 +84,13 @@ func (d *Daemon) startBackground() error {
 
 // runForeground runs the daemon in foreground mode
 func (d *Daemon) runForeground() error {
+	// Load configuration
+	cfg, err := config.LoadConfig(d.ConfigPath)
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+	d.Config = cfg
+
 	// Create data directory if not exists
 	if err := os.MkdirAll(d.DataDir, 0755); err != nil {
 		return fmt.Errorf("failed to create data directory: %w", err)
@@ -95,6 +105,7 @@ func (d *Daemon) runForeground() error {
 
 	d.Running = true
 	log.Printf("DaemonFlow daemon running (PID: %d)", pid)
+	log.Printf("Config: watch_dir=%s, log_level=%s", d.Config.WatchDir, d.Config.LogLevel)
 
 	// Set up signal handling
 	sigChan := make(chan os.Signal, 1)

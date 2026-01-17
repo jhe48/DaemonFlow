@@ -11,6 +11,7 @@ import (
 var (
 	version    = "0.1.0-dev"
 	foreground bool
+	configPath string
 )
 
 func main() {
@@ -32,10 +33,12 @@ func main() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			d := daemon.New()
 			d.Foreground = foreground
+			d.ConfigPath = configPath
 			return d.Start()
 		},
 	}
 	startCmd.Flags().BoolVar(&foreground, "foreground", false, "Run in foreground (don't daemonize)")
+	startCmd.Flags().StringVar(&configPath, "config", "", "Path to config file (default: ~/.daemonflow/config.yaml)")
 
 	// Stop command
 	var stopCmd = &cobra.Command{
