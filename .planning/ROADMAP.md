@@ -38,14 +38,12 @@ Plans:
 ### Phase 2: Git Monitoring
 **Goal**: Daemon detects and records Git activity in watched directory
 **Depends on**: Phase 1
-**Research**: Likely (go-git library or git CLI integration)
-**Research topics**: go-git vs shelling out to git, watching .git directory, parsing git status
-**Plans**: TBD
+**Research**: Unlikely (using git CLI - simpler than go-git, decided in planning)
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Git repository detection and validation
-- [ ] 02-02: Commit and branch change detection
-- [ ] 02-03: Activity scoring for Git events
+- [ ] 02-01: Git repo detection + commit/branch monitoring + daemon integration
+- [ ] 02-02: Staged changes detection
 
 ### Phase 3: File Watcher
 **Goal**: Daemon detects meaningful file changes (not noise like .git or node_modules)
@@ -122,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-17 |
-| 2. Git Monitoring | 0/3 | Not started | - |
+| 2. Git Monitoring | 0/2 | Not started | - |
 | 3. File Watcher | 0/3 | Not started | - |
 | 4. Task Tracking | 0/2 | Not started | - |
 | 5. Freedom Clock | 0/3 | Not started | - |
