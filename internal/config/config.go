@@ -43,6 +43,9 @@ type WatcherConfig struct {
 
 	// IgnorePatterns are additional patterns to ignore (beyond defaults)
 	IgnorePatterns []string `yaml:"ignore_patterns"`
+
+	// DebounceWindow is the time to wait before emitting batched file changes
+	DebounceWindow time.Duration `yaml:"debounce_window"`
 }
 
 // EarningConfig holds Freedom Clock earning weights (placeholder for Phase 5)
@@ -76,6 +79,7 @@ func DefaultConfig() *Config {
 		Watcher: WatcherConfig{
 			Enabled:        true,
 			IgnorePatterns: []string{}, // Use built-in defaults, allow user additions
+			DebounceWindow: 500 * time.Millisecond,
 		},
 		Earning: EarningConfig{
 			BaseRate:    1.0,
