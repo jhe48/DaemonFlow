@@ -52,7 +52,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: fsnotify watcher + ignore patterns + FileChange events
+- [x] 03-01: fsnotify watcher + ignore patterns + FileChange events - Completed 2026-01-20
 - [ ] 03-02: Debouncing + daemon integration
 
 ### Phase 4: Task Tracking
@@ -119,7 +119,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-17 |
 | 2. Git Monitoring | 2/2 | Complete | 2026-01-17 |
-| 3. File Watcher | 0/2 | Not started | - |
+| 3. File Watcher | 1/2 | In progress | - |
 | 4. Task Tracking | 0/2 | Not started | - |
 | 5. Freedom Clock | 0/3 | Not started | - |
 | 6. TUI Foundation | 0/3 | Not started | - |
