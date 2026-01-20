@@ -23,6 +23,9 @@ type Config struct {
 	// Git holds git monitoring configuration
 	Git GitConfig `yaml:"git"`
 
+	// Watcher holds file watcher configuration
+	Watcher WatcherConfig `yaml:"watcher"`
+
 	// Earning holds Freedom Clock weights (placeholder for Phase 5)
 	Earning EarningConfig `yaml:"earning"`
 }
@@ -31,6 +34,15 @@ type Config struct {
 type GitConfig struct {
 	// PollInterval is how often to check for git changes
 	PollInterval time.Duration `yaml:"poll_interval"`
+}
+
+// WatcherConfig holds file watcher settings
+type WatcherConfig struct {
+	// Enabled controls whether file watching is active
+	Enabled bool `yaml:"enabled"`
+
+	// IgnorePatterns are additional patterns to ignore (beyond defaults)
+	IgnorePatterns []string `yaml:"ignore_patterns"`
 }
 
 // EarningConfig holds Freedom Clock earning weights (placeholder for Phase 5)
@@ -60,6 +72,10 @@ func DefaultConfig() *Config {
 		SocketPath: filepath.Join(homeDir, ".daemonflow", "daemonflow.sock"),
 		Git: GitConfig{
 			PollInterval: 5 * time.Second,
+		},
+		Watcher: WatcherConfig{
+			Enabled:        true,
+			IgnorePatterns: []string{}, // Use built-in defaults, allow user additions
 		},
 		Earning: EarningConfig{
 			BaseRate:    1.0,
