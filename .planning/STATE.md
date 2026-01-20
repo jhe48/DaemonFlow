@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-17)
 
 **Core value:** The daemon must work flawlessly in the background without intervention.
-**Current focus:** Phase 3 — File Watcher
+**Current focus:** Phase 4 — Task Tracking
 
 ## Current Position
 
 Phase: 3 of 8 (File Watcher)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-20 — Completed 03-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 — Completed 03-02-PLAN.md
 
-Progress: ███░░░░░░░ 31%
+Progress: ████░░░░░░ 38%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 8 min
-- Total execution time: 0.55 hours
+- Total plans completed: 6
+- Average duration: 7 min
+- Total execution time: 0.6 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: ███░░░░░░░ 31%
 |-------|-------|-------|----------|
 | 1. Foundation | 2/2 ✓ | 16 min | 8 min |
 | 2. Git Monitoring | 2/2 ✓ | 12 min | 6 min |
-| 3. File Watcher | 1/2 | 5 min | 5 min |
+| 3. File Watcher | 2/2 ✓ | 8 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (8 min), 02-01 (10 min), 02-02 (2 min), 03-01 (5 min)
+- Last 5 plans: 02-01 (10 min), 02-02 (2 min), 03-01 (5 min), 03-02 (3 min)
 - Trend: Improving
 
 ## Accumulated Context
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 | 02-01 | Activity listener pattern | Extensible for future subscribers |
 | 03-01 | fsnotify for file watching | Cross-platform, standard Go library |
 | 03-01 | Custom ** glob matching | filepath.Match doesn't support recursive patterns |
+| 03-02 | 500ms debounce window | Balance responsiveness and noise reduction |
+| 03-02 | Batched activity with max 5 files | Avoid excessive log/activity output |
 
 ### Deferred Issues
 
@@ -67,5 +69,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 03-01-PLAN.md
+Stopped at: Completed 03-02-PLAN.md (Phase 3 complete)
 Resume file: None
