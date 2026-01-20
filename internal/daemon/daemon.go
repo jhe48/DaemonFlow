@@ -393,6 +393,46 @@ func (d *Daemon) GetSocketPath() string {
 	return filepath.Join(homeDir, ".daemonflow", "daemonflow.sock")
 }
 
+// GetClockState returns the current clock state ("working", "break", "overtime")
+func (d *Daemon) GetClockState() string {
+	if d.clock != nil {
+		return string(d.clock.GetState())
+	}
+	return "working"
+}
+
+// GetEarnedSeconds returns the current earned seconds balance
+func (d *Daemon) GetEarnedSeconds() int {
+	if d.clock != nil {
+		return d.clock.GetEarnedSeconds()
+	}
+	return 0
+}
+
+// GetSessionEarned returns total seconds earned this session
+func (d *Daemon) GetSessionEarned() int {
+	if d.clock != nil {
+		return d.clock.GetSessionEarned()
+	}
+	return 0
+}
+
+// StartBreak transitions the clock to break state
+func (d *Daemon) StartBreak() (previousState, newState string) {
+	if d.clock != nil {
+		return d.clock.StartBreak()
+	}
+	return "working", "working"
+}
+
+// EndBreak transitions the clock back to working state
+func (d *Daemon) EndBreak() (previousState, newState string) {
+	if d.clock != nil {
+		return d.clock.EndBreak()
+	}
+	return "working", "working"
+}
+
 // Stop stops the running daemon
 func (d *Daemon) Stop() error {
 	pid, err := d.readPID()

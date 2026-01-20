@@ -24,6 +24,7 @@ const (
 type Clock struct {
 	state         ClockState
 	earnedSeconds int // Total earned seconds (can go negative in overtime)
+	sessionEarned int // Earned this session (resets on daemon start)
 	earning       *EarningCalculator
 	mu            sync.RWMutex
 	ticker        *time.Ticker
@@ -103,29 +104,36 @@ func (c *Clock) OnActivity(act activity.Activity) {
 	if c.state == StateWorking {
 		earned := c.earning.CalculateEarned(act)
 		c.earnedSeconds += earned
+		c.sessionEarned += earned
 	}
 }
 
-// StartBreak transitions to break state
-func (c *Clock) StartBreak() {
+// StartBreak transitions to break state and returns previous/new state
+func (c *Clock) StartBreak() (previousState, newState string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Can only start break if there's earned time
+	previousState = string(c.state)
+	// Can only start break if in working state
 	if c.state == StateWorking {
 		c.state = StateBreak
 	}
+	newState = string(c.state)
+	return
 }
 
-// EndBreak transitions back to working state
-func (c *Clock) EndBreak() {
+// EndBreak transitions back to working state and returns previous/new state
+func (c *Clock) EndBreak() (previousState, newState string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	previousState = string(c.state)
 	// EndBreak always returns to working, regardless of current state (break or overtime)
 	if c.state == StateBreak || c.state == StateOvertime {
 		c.state = StateWorking
 	}
+	newState = string(c.state)
+	return
 }
 
 // GetState returns current clock state
@@ -140,4 +148,11 @@ func (c *Clock) GetEarnedSeconds() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.earnedSeconds
+}
+
+// GetSessionEarned returns total seconds earned this session
+func (c *Clock) GetSessionEarned() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.sessionEarned
 }

@@ -15,6 +15,11 @@ type DaemonInterface interface {
 	GetWatchDir() string
 	RequestShutdown()
 	GetRecentActivitiesData(limit int) []ActivityData
+	GetClockState() string
+	GetEarnedSeconds() int
+	GetSessionEarned() int
+	StartBreak() (previousState, newState string)
+	EndBreak() (previousState, newState string)
 }
 
 // Server handles IPC connections from clients
