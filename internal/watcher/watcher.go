@@ -2,10 +2,13 @@ package watcher
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/jackyhe0402/daemonflow/internal/activity"
@@ -13,9 +16,11 @@ import (
 
 // Watcher monitors a directory for file changes
 type Watcher struct {
-	root    string
-	watcher *fsnotify.Watcher
-	ignore  *IgnoreMatcher
+	root           string
+	watcher        *fsnotify.Watcher
+	ignore         *IgnoreMatcher
+	debouncer      *Debouncer
+	debounceWindow time.Duration
 
 	// Listeners to notify on changes
 	listeners []activity.ActivityListener
@@ -27,7 +32,7 @@ type Watcher struct {
 }
 
 // NewWatcher creates a new file watcher for the given root directory
-func NewWatcher(root string, ignore *IgnoreMatcher) (*Watcher, error) {
+func NewWatcher(root string, ignore *IgnoreMatcher, debounceWindow time.Duration) (*Watcher, error) {
 	// Resolve absolute path
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -47,10 +52,15 @@ func NewWatcher(root string, ignore *IgnoreMatcher) (*Watcher, error) {
 		ignore = NewIgnoreMatcher()
 	}
 
+	if debounceWindow <= 0 {
+		debounceWindow = 500 * time.Millisecond
+	}
+
 	return &Watcher{
-		root:      absRoot,
-		ignore:    ignore,
-		listeners: make([]activity.ActivityListener, 0),
+		root:           absRoot,
+		ignore:         ignore,
+		debounceWindow: debounceWindow,
+		listeners:      make([]activity.ActivityListener, 0),
 	}, nil
 }
 
@@ -70,6 +80,9 @@ func (w *Watcher) Start(ctx context.Context) error {
 	}
 	w.watcher = fsWatcher
 
+	// Create debouncer for batching events
+	w.debouncer = NewDebouncer(w.debounceWindow, w.emitBatchedActivity)
+
 	// Add all directories recursively
 	if err := w.addDirectoriesRecursively(w.root); err != nil {
 		w.watcher.Close()
@@ -83,7 +96,7 @@ func (w *Watcher) Start(ctx context.Context) error {
 	w.wg.Add(1)
 	go w.eventLoop(ctx)
 
-	log.Printf("File watcher started: watching %s", w.root)
+	log.Printf("File watcher started: watching %s (debounce %v)", w.root, w.debounceWindow)
 	return nil
 }
 
@@ -92,6 +105,10 @@ func (w *Watcher) Stop() {
 	if w.cancel != nil {
 		w.cancel()
 		w.wg.Wait()
+	}
+	// Flush any pending debounced events
+	if w.debouncer != nil {
+		w.debouncer.Flush()
 	}
 	if w.watcher != nil {
 		w.watcher.Close()
@@ -194,13 +211,51 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 		return
 	}
 
-	// Emit FileChange activity
+	// Add to debouncer instead of emitting immediately
+	w.debouncer.Add(FileEvent{
+		Path:      relPath,
+		Operation: operation,
+	})
+}
+
+// emitBatchedActivity emits a single FileChange activity for batched events
+func (w *Watcher) emitBatchedActivity(events []FileEvent) {
+	if len(events) == 0 {
+		return
+	}
+
+	// Collect unique operations
+	opsMap := make(map[string]bool)
+	for _, e := range events {
+		opsMap[e.Operation] = true
+	}
+	ops := make([]string, 0, len(opsMap))
+	for op := range opsMap {
+		ops = append(ops, op)
+	}
+
+	// Build file list (max 5 files shown)
+	fileList := make([]string, 0, 5)
+	for i, e := range events {
+		if i >= 5 {
+			break
+		}
+		fileList = append(fileList, e.Path)
+	}
+	filesStr := strings.Join(fileList, ", ")
+	if len(events) > 5 {
+		filesStr = fmt.Sprintf("%s (+%d more)", filesStr, len(events)-5)
+	}
+
+	// Emit single batched activity
 	act := activity.NewActivity(activity.FileChange, map[string]string{
-		"path":      relPath,
-		"operation": operation,
+		"file_count": fmt.Sprintf("%d", len(events)),
+		"files":      filesStr,
+		"operations": strings.Join(ops, ", "),
 	})
 	w.notifyListeners(act)
-	log.Printf("File activity: %s %s", operation, relPath)
+
+	log.Printf("File activity: %d files changed (%s)", len(events), strings.Join(ops, ", "))
 }
 
 // notifyListeners sends an activity to all registered listeners
