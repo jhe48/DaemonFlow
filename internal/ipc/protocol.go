@@ -14,6 +14,8 @@ const (
 	RequestTypeStop          = "stop"           // Request graceful shutdown
 	RequestTypeGetState      = "get_state"      // Get current productivity state (for TUI)
 	RequestTypeGetActivities = "get_activities" // Get recent activity events
+	RequestTypeStartBreak    = "start_break"    // Start break mode
+	RequestTypeEndBreak      = "end_break"      // End break mode
 )
 
 // Request represents an IPC request message
@@ -36,12 +38,17 @@ type StatusResponse struct {
 	WatchDir string `json:"watch_dir"`
 }
 
-// StateResponse contains productivity state (placeholder for future phases)
+// StateResponse contains productivity state for TUI
 type StateResponse struct {
-	// Placeholder for clock/activity data from Phase 5
-	EarnedToday    float64 `json:"earned_today"`
-	CurrentSession float64 `json:"current_session"`
-	ActiveTask     string  `json:"active_task,omitempty"`
+	ClockState    string `json:"clock_state"`     // "working", "break", "overtime"
+	EarnedSeconds int    `json:"earned_seconds"`  // Current balance (can be negative)
+	SessionEarned int    `json:"session_earned"`  // Earned this session
+}
+
+// ClockEventResponse contains the result of a break state transition
+type ClockEventResponse struct {
+	PreviousState string `json:"previous_state"`
+	NewState      string `json:"new_state"`
 }
 
 // GetActivitiesRequest contains parameters for getting activities
