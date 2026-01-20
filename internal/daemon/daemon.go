@@ -17,6 +17,7 @@ import (
 	"github.com/jackyhe0402/daemonflow/internal/config"
 	"github.com/jackyhe0402/daemonflow/internal/git"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
+	"github.com/jackyhe0402/daemonflow/internal/watcher"
 )
 
 // MaxRecentActivities is the maximum number of activities to keep in memory
@@ -32,6 +33,7 @@ type Daemon struct {
 	Config       *config.Config
 	ipcServer    *ipc.Server
 	gitMonitor   *git.Monitor
+	fileWatcher  *watcher.Watcher
 	startTime    time.Time
 	shutdownChan chan struct{}
 
@@ -139,6 +141,11 @@ func (d *Daemon) runForeground() error {
 		log.Printf("Git monitor not started: %v", err)
 	}
 
+	// Start file watcher if enabled
+	if err := d.startFileWatcher(ctx); err != nil {
+		log.Printf("File watcher not started: %v", err)
+	}
+
 	d.Running = true
 	log.Printf("DaemonFlow daemon running (PID: %d)", pid)
 	log.Printf("Config: watch_dir=%s, log_level=%s", d.Config.WatchDir, d.Config.LogLevel)
@@ -157,11 +164,13 @@ func (d *Daemon) runForeground() error {
 		case sig := <-sigChan:
 			log.Printf("Received signal %v, shutting down...", sig)
 			d.Running = false
+			d.stopFileWatcher()
 			d.stopGitMonitor()
 			return nil
 		case <-d.shutdownChan:
 			log.Printf("Received shutdown request via IPC, shutting down...")
 			d.Running = false
+			d.stopFileWatcher()
 			d.stopGitMonitor()
 			return nil
 		case <-ticker.C:
@@ -199,6 +208,42 @@ func (d *Daemon) startGitMonitor(ctx context.Context) error {
 func (d *Daemon) stopGitMonitor() {
 	if d.gitMonitor != nil {
 		d.gitMonitor.Stop()
+	}
+}
+
+// startFileWatcher initializes and starts the file watcher if enabled
+func (d *Daemon) startFileWatcher(ctx context.Context) error {
+	if !d.Config.Watcher.Enabled {
+		log.Printf("File watcher disabled in config")
+		return nil
+	}
+
+	// Create ignore matcher with default + config patterns
+	ignore := watcher.NewIgnoreMatcherWithPatterns(d.Config.Watcher.IgnorePatterns)
+
+	// Create watcher with config values
+	fw, err := watcher.NewWatcher(d.Config.WatchDir, ignore, d.Config.Watcher.DebounceWindow)
+	if err != nil {
+		return fmt.Errorf("failed to create file watcher: %w", err)
+	}
+
+	// Add daemon as listener (OnActivity already implemented)
+	fw.AddListener(d)
+
+	// Start watcher
+	if err := fw.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start file watcher: %w", err)
+	}
+
+	d.fileWatcher = fw
+	log.Printf("File watcher monitoring: %s (debounce %v)", d.Config.WatchDir, d.Config.Watcher.DebounceWindow)
+	return nil
+}
+
+// stopFileWatcher stops the file watcher if running
+func (d *Daemon) stopFileWatcher() {
+	if d.fileWatcher != nil {
+		d.fileWatcher.Stop()
 	}
 }
 
