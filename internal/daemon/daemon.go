@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/jackyhe0402/daemonflow/internal/activity"
+	"github.com/jackyhe0402/daemonflow/internal/clock"
 	"github.com/jackyhe0402/daemonflow/internal/config"
 	"github.com/jackyhe0402/daemonflow/internal/git"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
@@ -36,6 +37,7 @@ type Daemon struct {
 	gitMonitor   *git.Monitor
 	fileWatcher  *watcher.Watcher
 	taskTracker  *task.TaskTracker
+	clock        *clock.Clock
 	startTime    time.Time
 	shutdownChan chan struct{}
 
@@ -128,6 +130,10 @@ func (d *Daemon) runForeground() error {
 	d.shutdownChan = make(chan struct{})
 	d.recentActivities = make([]activity.Activity, 0, MaxRecentActivities)
 
+	// Create and start Freedom Clock
+	d.clock = clock.NewClock(&d.Config.Earning)
+	d.clock.Start()
+
 	// Start IPC server
 	d.ipcServer = ipc.NewServer(d.Config.SocketPath, d)
 	if err := d.ipcServer.Start(); err != nil {
@@ -171,6 +177,7 @@ func (d *Daemon) runForeground() error {
 		case sig := <-sigChan:
 			log.Printf("Received signal %v, shutting down...", sig)
 			d.Running = false
+			d.stopClock()
 			d.stopFileWatcher()
 			d.stopTaskTracker()
 			d.stopGitMonitor()
@@ -178,6 +185,7 @@ func (d *Daemon) runForeground() error {
 		case <-d.shutdownChan:
 			log.Printf("Received shutdown request via IPC, shutting down...")
 			d.Running = false
+			d.stopClock()
 			d.stopFileWatcher()
 			d.stopTaskTracker()
 			d.stopGitMonitor()
@@ -295,6 +303,13 @@ func (d *Daemon) stopTaskTracker() {
 	}
 }
 
+// stopClock stops the Freedom Clock if running
+func (d *Daemon) stopClock() {
+	if d.clock != nil {
+		d.clock.Stop()
+	}
+}
+
 // OnActivity implements activity.ActivityListener
 func (d *Daemon) OnActivity(act activity.Activity) {
 	d.activityMu.Lock()
@@ -306,6 +321,11 @@ func (d *Daemon) OnActivity(act activity.Activity) {
 	// Trim to max size
 	if len(d.recentActivities) > MaxRecentActivities {
 		d.recentActivities = d.recentActivities[len(d.recentActivities)-MaxRecentActivities:]
+	}
+
+	// Forward to Freedom Clock for earning calculation
+	if d.clock != nil {
+		d.clock.OnActivity(act)
 	}
 }
 
