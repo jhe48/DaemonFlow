@@ -26,6 +26,9 @@ type Config struct {
 	// Watcher holds file watcher configuration
 	Watcher WatcherConfig `yaml:"watcher"`
 
+	// Task holds task tracking configuration
+	Task TaskConfig `yaml:"task"`
+
 	// Earning holds Freedom Clock weights (placeholder for Phase 5)
 	Earning EarningConfig `yaml:"earning"`
 }
@@ -57,6 +60,18 @@ type EarningConfig struct {
 	Multipliers map[string]float64 `yaml:"multipliers"`
 }
 
+// TaskConfig holds task tracking settings
+type TaskConfig struct {
+	// Enabled controls whether task tracking is active
+	Enabled bool `yaml:"enabled"`
+
+	// FilePath is the path to the task file (relative to watch_dir)
+	FilePath string `yaml:"file_path"`
+
+	// PollInterval is how often to check for task changes
+	PollInterval time.Duration `yaml:"poll_interval"`
+}
+
 // DefaultConfig returns a Config with sensible defaults
 func DefaultConfig() *Config {
 	homeDir, _ := os.UserHomeDir()
@@ -80,6 +95,11 @@ func DefaultConfig() *Config {
 			Enabled:        true,
 			IgnorePatterns: []string{}, // Use built-in defaults, allow user additions
 			DebounceWindow: 500 * time.Millisecond,
+		},
+		Task: TaskConfig{
+			Enabled:      true,
+			FilePath:     "TASKS.md",
+			PollInterval: 2 * time.Second,
 		},
 		Earning: EarningConfig{
 			BaseRate:    1.0,
