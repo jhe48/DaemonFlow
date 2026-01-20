@@ -51,13 +51,19 @@ type WatcherConfig struct {
 	DebounceWindow time.Duration `yaml:"debounce_window"`
 }
 
-// EarningConfig holds Freedom Clock earning weights (placeholder for Phase 5)
+// EarningConfig holds Freedom Clock earning weights for each activity type
 type EarningConfig struct {
-	// BaseRate is the default earning rate per hour
-	BaseRate float64 `yaml:"base_rate"`
+	// CommitSeconds is seconds earned per git commit (default: 300 = 5 min)
+	CommitSeconds int `yaml:"commit_seconds"`
 
-	// Multipliers holds category-specific multipliers
-	Multipliers map[string]float64 `yaml:"multipliers"`
+	// StageSeconds is seconds earned per staging event (default: 60 = 1 min)
+	StageSeconds int `yaml:"stage_seconds"`
+
+	// FileChangeSeconds is seconds earned per file change batch (default: 30 = 30 sec)
+	FileChangeSeconds int `yaml:"file_change_seconds"`
+
+	// TaskCompleteSeconds is seconds earned per task completion (default: 180 = 3 min)
+	TaskCompleteSeconds int `yaml:"task_complete_seconds"`
 }
 
 // TaskConfig holds task tracking settings
@@ -102,8 +108,10 @@ func DefaultConfig() *Config {
 			PollInterval: 2 * time.Second,
 		},
 		Earning: EarningConfig{
-			BaseRate:    1.0,
-			Multipliers: make(map[string]float64),
+			CommitSeconds:       300, // 5 minutes per commit
+			StageSeconds:        60,  // 1 minute per staging event
+			FileChangeSeconds:   30,  // 30 seconds per file change batch
+			TaskCompleteSeconds: 180, // 3 minutes per task completion
 		},
 	}
 }
