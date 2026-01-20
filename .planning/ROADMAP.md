@@ -17,7 +17,7 @@ None
 - [x] **Phase 1: Foundation** - Go daemon skeleton with IPC socket (Complete)
 - [x] **Phase 2: Git Monitoring** - Track commits, staged changes, branch switches (Complete)
 - [x] **Phase 3: File Watcher** - Monitor file changes in project directory (Complete)
-- [ ] **Phase 4: Task Tracking** - Checkbox-style task completion monitoring
+- [ ] **Phase 4: Task Tracking** - Checkbox-style task completion monitoring (In progress)
 - [ ] **Phase 5: Freedom Clock** - Earning formula and countdown logic
 - [ ] **Phase 6: TUI Foundation** - Rust TUI with ratatui, connect to daemon
 - [ ] **Phase 7: Pet System** - ASCII pet states reflecting productivity
@@ -62,7 +62,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: Task file detection and parsing
+- [x] 04-01: Task file detection and parsing - Completed 2026-01-20
 - [ ] 04-02: Completion detection and scoring
 
 ### Phase 5: Freedom Clock
@@ -120,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation | 2/2 | Complete | 2026-01-17 |
 | 2. Git Monitoring | 2/2 | Complete | 2026-01-17 |
 | 3. File Watcher | 2/2 | Complete | 2026-01-20 |
-| 4. Task Tracking | 0/2 | Not started | - |
+| 4. Task Tracking | 1/2 | In progress | - |
 | 5. Freedom Clock | 0/3 | Not started | - |
 | 6. TUI Foundation | 0/3 | Not started | - |
 | 7. Pet System | 0/3 | Not started | - |
