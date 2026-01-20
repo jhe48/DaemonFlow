@@ -142,6 +142,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleGetState()
 	case RequestTypeGetActivities:
 		resp, err = s.handleGetActivities(req)
+	case RequestTypeStartBreak:
+		resp, err = s.handleStartBreak()
+	case RequestTypeEndBreak:
+		resp, err = s.handleEndBreak()
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -178,15 +182,32 @@ func (s *Server) handleStop() (*Response, error) {
 	return NewSuccessResponse(nil)
 }
 
-// handleGetState handles get_state requests (placeholder for TUI)
+// handleGetState handles get_state requests for TUI
 func (s *Server) handleGetState() (*Response, error) {
-	// Placeholder - will be populated in Phase 5
 	state := StateResponse{
-		EarnedToday:    0,
-		CurrentSession: 0,
-		ActiveTask:     "",
+		ClockState:    s.daemon.GetClockState(),
+		EarnedSeconds: s.daemon.GetEarnedSeconds(),
+		SessionEarned: s.daemon.GetSessionEarned(),
 	}
 	return NewSuccessResponse(state)
+}
+
+// handleStartBreak handles start_break requests
+func (s *Server) handleStartBreak() (*Response, error) {
+	prev, curr := s.daemon.StartBreak()
+	return NewSuccessResponse(ClockEventResponse{
+		PreviousState: prev,
+		NewState:      curr,
+	})
+}
+
+// handleEndBreak handles end_break requests
+func (s *Server) handleEndBreak() (*Response, error) {
+	prev, curr := s.daemon.EndBreak()
+	return NewSuccessResponse(ClockEventResponse{
+		PreviousState: prev,
+		NewState:      curr,
+	})
 }
 
 // handleGetActivities handles get_activities requests
