@@ -17,6 +17,7 @@ import (
 	"github.com/jackyhe0402/daemonflow/internal/config"
 	"github.com/jackyhe0402/daemonflow/internal/git"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
+	"github.com/jackyhe0402/daemonflow/internal/task"
 	"github.com/jackyhe0402/daemonflow/internal/watcher"
 )
 
@@ -34,6 +35,7 @@ type Daemon struct {
 	ipcServer    *ipc.Server
 	gitMonitor   *git.Monitor
 	fileWatcher  *watcher.Watcher
+	taskTracker  *task.TaskTracker
 	startTime    time.Time
 	shutdownChan chan struct{}
 
@@ -146,6 +148,11 @@ func (d *Daemon) runForeground() error {
 		log.Printf("File watcher not started: %v", err)
 	}
 
+	// Start task tracker if enabled
+	if err := d.startTaskTracker(ctx); err != nil {
+		log.Printf("Task tracker not started: %v", err)
+	}
+
 	d.Running = true
 	log.Printf("DaemonFlow daemon running (PID: %d)", pid)
 	log.Printf("Config: watch_dir=%s, log_level=%s", d.Config.WatchDir, d.Config.LogLevel)
@@ -165,12 +172,14 @@ func (d *Daemon) runForeground() error {
 			log.Printf("Received signal %v, shutting down...", sig)
 			d.Running = false
 			d.stopFileWatcher()
+			d.stopTaskTracker()
 			d.stopGitMonitor()
 			return nil
 		case <-d.shutdownChan:
 			log.Printf("Received shutdown request via IPC, shutting down...")
 			d.Running = false
 			d.stopFileWatcher()
+			d.stopTaskTracker()
 			d.stopGitMonitor()
 			return nil
 		case <-ticker.C:
@@ -244,6 +253,45 @@ func (d *Daemon) startFileWatcher(ctx context.Context) error {
 func (d *Daemon) stopFileWatcher() {
 	if d.fileWatcher != nil {
 		d.fileWatcher.Stop()
+	}
+}
+
+// startTaskTracker initializes and starts the task tracker if enabled
+func (d *Daemon) startTaskTracker(ctx context.Context) error {
+	if !d.Config.Task.Enabled {
+		log.Printf("Task tracker disabled in config")
+		return nil
+	}
+
+	// Resolve task file path: if relative, join with watch_dir
+	taskFilePath := d.Config.Task.FilePath
+	if !filepath.IsAbs(taskFilePath) {
+		taskFilePath = filepath.Join(d.Config.WatchDir, taskFilePath)
+	}
+
+	// Create task tracker
+	tt, err := task.NewTracker(taskFilePath, d.Config.Task.PollInterval)
+	if err != nil {
+		return fmt.Errorf("failed to create task tracker: %w", err)
+	}
+
+	// Add daemon as listener (d implements ActivityListener)
+	tt.AddListener(d)
+
+	// Start tracker
+	if err := tt.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start task tracker: %w", err)
+	}
+
+	d.taskTracker = tt
+	log.Printf("Task tracker monitoring: %s (poll every %v)", taskFilePath, d.Config.Task.PollInterval)
+	return nil
+}
+
+// stopTaskTracker stops the task tracker if running
+func (d *Daemon) stopTaskTracker() {
+	if d.taskTracker != nil {
+		d.taskTracker.Stop()
 	}
 }
 
