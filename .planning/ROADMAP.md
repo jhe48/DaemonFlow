@@ -73,7 +73,7 @@ Plans:
 
 Plans:
 - [x] 05-01: Earning formula with configurable weights - Completed 2026-01-20
-- [ ] 05-02: Clock state machine (working, break, overtime)
+- [x] 05-02: Clock state machine (working, break, overtime) - Completed 2026-01-20
 - [ ] 05-03: Consequences at zero
 
 ### Phase 6: TUI Foundation
@@ -121,7 +121,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Git Monitoring | 2/2 | Complete | 2026-01-17 |
 | 3. File Watcher | 2/2 | Complete | 2026-01-20 |
 | 4. Task Tracking | 2/2 | Complete | 2026-01-20 |
-| 5. Freedom Clock | 1/3 | In progress | - |
+| 5. Freedom Clock | 2/3 | In progress | - |
 | 6. TUI Foundation | 0/3 | Not started | - |
 | 7. Pet System | 0/3 | Not started | - |
 | 8. Graveyard | 0/3 | Not started | - |

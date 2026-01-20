@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 5 of 8 (Freedom Clock)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 05-01-PLAN.md
+Last activity: 2026-01-20 — Completed 05-02-PLAN.md
 
-Progress: █████░░░░░ 45%
+Progress: █████░░░░░ 50%
 
 ## Performance Metrics
 
@@ -31,11 +31,11 @@ Progress: █████░░░░░ 45%
 | 2. Git Monitoring | 2/2 ✓ | 12 min | 6 min |
 | 3. File Watcher | 2/2 ✓ | 8 min | 4 min |
 | 4. Task Tracking | 2/2 ✓ | 4 min | 2 min |
-| 5. Freedom Clock | 1/3 | 1 min | 1 min |
+| 5. Freedom Clock | 2/3 | 3 min | 1.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (3 min), 04-01 (2 min), 04-02 (2 min), 05-01 (1 min)
-- Trend: Improving
+- Last 5 plans: 04-01 (2 min), 04-02 (2 min), 05-01 (1 min), 05-02 (2 min)
+- Trend: Stable (fast)
 
 ## Accumulated Context
 
@@ -66,6 +66,9 @@ Recent decisions affecting current work:
 | 05-01 | Per-activity integer seconds | Simpler than BaseRate/Multipliers, direct mapping |
 | 05-01 | Switch over map for activity types | Explicit type handling, compile-time safety |
 | 05-01 | Default weights (commit=5m, stage=1m, file=30s, task=3m) | Balance productivity incentives |
+| 05-02 | Clock Start/Stop with ticker goroutine | Clean lifecycle, avoids resource leaks |
+| 05-02 | RWMutex for thread-safe state access | Concurrent reads, protected writes |
+| 05-02 | Only earn time in working state | Logical: don't earn break time while on break |
 
 ### Deferred Issues
 
@@ -78,5 +81,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 05-01-PLAN.md
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
