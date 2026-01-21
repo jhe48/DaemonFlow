@@ -52,3 +52,30 @@ func formatDuration(seconds int) string {
 	}
 	return fmt.Sprintf("%dm %ds", minutes, secs)
 }
+
+// ResurrectionRecord represents a pet resurrection event
+type ResurrectionRecord struct {
+	// Timestamp is when the resurrection occurred
+	Timestamp time.Time
+
+	// DeathIndex is which death this recovered from (1-based)
+	DeathIndex int
+}
+
+// String returns a human-readable format of the resurrection record
+func (r ResurrectionRecord) String() string {
+	return fmt.Sprintf("Pet resurrected on %s at %s (recovered from death #%d)",
+		r.Timestamp.Format("2006-01-02"),
+		r.Timestamp.Format("15:04"),
+		r.DeathIndex,
+	)
+}
+
+// ToMarkdownRow returns the resurrection record as a markdown table row
+func (r ResurrectionRecord) ToMarkdownRow() string {
+	return fmt.Sprintf("| %s | %s | Recovered from death #%d |",
+		r.Timestamp.Format("2006-01-02"),
+		r.Timestamp.Format("15:04"),
+		r.DeathIndex,
+	)
+}
