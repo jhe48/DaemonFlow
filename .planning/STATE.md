@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 Phase: 7 of 8 (Pet System)
 Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-20 — Completed 07-02-PLAN.md
+Last activity: 2026-01-21 — Completed 07-01-PLAN.md
 
 Progress: ████████░░ 75%
 
@@ -33,9 +33,10 @@ Progress: ████████░░ 75%
 | 4. Task Tracking | 2/2 ✓ | 4 min | 2 min |
 | 5. Freedom Clock | 3/3 ✓ | 5 min | 1.7 min |
 | 6. TUI Foundation | 3/3 ✓ | 9 min | 3 min |
+| 7. Pet System | 2/3 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-02 (2 min), 05-03 (2 min), 06-02 (5 min), 06-03 (4 min)
+- Last 5 plans: 05-03 (2 min), 06-02 (5 min), 06-03 (4 min), 07-01 (2 min), 07-02 (3 min)
 - Trend: Stable (fast)
 
 ## Accumulated Context
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 | 06-02 | 4-byte big-endian length prefix | Match Go daemon protocol exactly |
 | 06-03 | 500ms state refresh interval | Balance responsiveness and daemon load |
 | 06-03 | Color-coded states | Green=working, yellow=break, red=overtime |
+| 07-01 | 5-minute overtime death threshold | -300 seconds of overtime kills pet |
+| 07-01 | 60-second tired warning | Warn user to wrap up break |
 | 07-02 | Cat-based pet design | Simple, emotionally expressive ASCII art |
 | 07-02 | Case-insensitive get_art | Flexible state name matching |
 
@@ -89,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20
-Stopped at: Completed 07-02-PLAN.md
+Last session: 2026-01-21
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None
