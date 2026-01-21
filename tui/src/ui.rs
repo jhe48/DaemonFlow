@@ -1,6 +1,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 use crate::app::App;
+use crate::pet::{Pet, PetState};
 
 pub fn render(app: &App, frame: &mut Frame) {
     let area = frame.area();
@@ -9,10 +10,10 @@ pub fn render(app: &App, frame: &mut Frame) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),  // Header
-            Constraint::Length(5),  // Clock status
-            Constraint::Length(3),  // Controls help
-            Constraint::Min(0),     // Spacer
+            Constraint::Length(3),   // Header
+            Constraint::Min(12),     // Pet display (primary focus)
+            Constraint::Length(5),   // Clock status
+            Constraint::Length(3),   // Controls help
         ])
         .split(area);
 
@@ -23,8 +24,11 @@ pub fn render(app: &App, frame: &mut Frame) {
         .block(Block::default().borders(Borders::BOTTOM));
     frame.render_widget(header, chunks[0]);
 
+    // Pet display (new, primary visual focus)
+    render_pet(&app.pet, frame, chunks[1]);
+
     // Clock status
-    render_clock_status(app, frame, chunks[1]);
+    render_clock_status(app, frame, chunks[2]);
 
     // Controls
     let controls = if app.daemon_connected {
@@ -35,7 +39,7 @@ pub fn render(app: &App, frame: &mut Frame) {
     let controls_widget = Paragraph::new(controls)
         .style(Style::default().fg(Color::DarkGray))
         .alignment(Alignment::Center);
-    frame.render_widget(controls_widget, chunks[2]);
+    frame.render_widget(controls_widget, chunks[3]);
 }
 
 fn render_clock_status(app: &App, frame: &mut Frame, area: Rect) {
@@ -88,4 +92,23 @@ fn render_clock_status(app: &App, frame: &mut Frame, area: Rect) {
             frame.render_widget(widget, area);
         }
     }
+}
+
+/// Render the pet display with state-based coloring.
+fn render_pet(pet: &Pet, frame: &mut Frame, area: Rect) {
+    let art = pet.get_art();
+    let color = match pet.get_state() {
+        PetState::Healthy => Color::Green,
+        PetState::Resting => Color::Cyan,
+        PetState::Tired => Color::Yellow,
+        PetState::Decaying => Color::Red,
+        PetState::Dead => Color::DarkGray,
+    };
+
+    let title = format!("Pet ({})", pet.get_state().display_name());
+    let widget = Paragraph::new(art)
+        .style(Style::default().fg(color))
+        .alignment(Alignment::Center)
+        .block(Block::default().borders(Borders::ALL).title(title));
+    frame.render_widget(widget, area);
 }
