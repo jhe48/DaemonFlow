@@ -20,8 +20,8 @@ None
 - [x] **Phase 4: Task Tracking** - Checkbox-style task completion monitoring (Complete)
 - [x] **Phase 5: Freedom Clock** - Earning formula and countdown logic (Complete)
 - [x] **Phase 6: TUI Foundation** - Rust TUI with ratatui, connect to daemon (Complete)
-- [ ] **Phase 7: Pet System** - ASCII pet states reflecting productivity (Next)
-- [ ] **Phase 8: Graveyard** - Death logging, recovery mechanics, streak management
+- [x] **Phase 7: Pet System** - ASCII pet states reflecting productivity (Complete)
+- [ ] **Phase 8: Graveyard** - Death logging, recovery mechanics, streak management (In progress)
 
 ## Phase Details
 
@@ -97,7 +97,7 @@ Plans:
 Plans:
 - [x] 07-01: Pet state machine and transitions - Completed 2026-01-21
 - [x] 07-02: ASCII art for each state - Completed 2026-01-20
-- [ ] 07-03: Animation and display integration
+- [x] 07-03: Animation and display integration - Completed 2026-01-20
 
 ### Phase 8: Graveyard
 **Goal**: Death logging to GRAVEYARD.md, recovery mechanics, streak tracking
@@ -106,7 +106,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 08-01: Death logging and GRAVEYARD.md format
+- [x] 08-01: Death logging and GRAVEYARD.md format - Completed 2026-01-21
 - [ ] 08-02: Recovery mechanics and cost system
 - [ ] 08-03: Streak tracking and display
 
@@ -123,5 +123,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Task Tracking | 2/2 | Complete | 2026-01-20 |
 | 5. Freedom Clock | 3/3 | Complete | 2026-01-20 |
 | 6. TUI Foundation | 3/3 | Complete | 2026-01-20 |
-| 7. Pet System | 2/3 | In progress | - |
-| 8. Graveyard | 0/3 | Not started | - |
+| 7. Pet System | 3/3 | Complete | 2026-01-21 |
+| 8. Graveyard | 1/3 | In progress | - |

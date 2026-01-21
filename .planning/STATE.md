@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-17)
 
 **Core value:** The daemon must work flawlessly in the background without intervention.
-**Current focus:** Phase 7 — Pet System
+**Current focus:** Phase 8 — Graveyard
 
 ## Current Position
 
-Phase: 7 of 8 (Pet System)
-Plan: 3 of 3 in current phase
-Status: Completed
-Last activity: 2026-01-20 — Completed 07-03-PLAN.md
+Phase: 8 of 8 (Graveyard)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-21 — Completed 08-01-PLAN.md
 
-Progress: █████████░ 87.5%
+Progress: █████████░ 93.75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 5 min
-- Total execution time: 1 hour 15 min
+- Total execution time: 1 hour 17 min
 
 **By Phase:**
 
@@ -34,9 +34,10 @@ Progress: █████████░ 87.5%
 | 5. Freedom Clock | 3/3 ✓ | 5 min | 1.7 min |
 | 6. TUI Foundation | 3/3 ✓ | 9 min | 3 min |
 | 7. Pet System | 3/3 ✓ | 20 min | 6.7 min |
+| 8. Graveyard | 1/3 | 2 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-02 (5 min), 06-03 (4 min), 07-01 (2 min), 07-02 (3 min), 07-03 (15 min)
+- Last 5 plans: 06-03 (4 min), 07-01 (2 min), 07-02 (3 min), 07-03 (15 min), 08-01 (2 min)
 - Trend: Stable (fast)
 
 ## Accumulated Context
@@ -84,6 +85,9 @@ Recent decisions affecting current work:
 | 07-03 | State indicators above head | Consistent centering with Alignment::Center |
 | 07-03 | Pet as primary UI section | Largest area (Min 12) for visual impact |
 | 07-03 | State-based pet coloring | Green/cyan/yellow/red/gray emotional mapping |
+| 08-01 | DeathThresholdSeconds = -300 | Match TUI constant for death trigger |
+| 08-01 | OnDeath callback pattern | Event-based notification for death |
+| 08-01 | GRAVEYARD.md markdown table | Human-readable persistent death records |
 
 ### Deferred Issues
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-20
-Stopped at: Completed 07-03-PLAN.md (Phase 7 complete)
+Last session: 2026-01-21
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
