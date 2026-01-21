@@ -177,3 +177,14 @@ func (c *Clock) GetSessionEarned() int {
 	defer c.mu.RUnlock()
 	return c.sessionEarned
 }
+
+// Reset resets the clock to initial working state
+// This is called during resurrection - forfeits all earned time as recovery cost
+func (c *Clock) Reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.earnedSeconds = 0  // Forfeit all earned time (recovery cost)
+	c.state = StateWorking
+	c.deathTriggered = false
+}
