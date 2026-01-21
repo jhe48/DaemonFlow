@@ -95,8 +95,8 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 07-01: Pet state machine and transitions
-- [ ] 07-02: ASCII art for each state
+- [x] 07-01: Pet state machine and transitions - Completed 2026-01-20
+- [x] 07-02: ASCII art for each state - Completed 2026-01-20
 - [ ] 07-03: Animation and display integration
 
 ### Phase 8: Graveyard
@@ -123,5 +123,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Task Tracking | 2/2 | Complete | 2026-01-20 |
 | 5. Freedom Clock | 3/3 | Complete | 2026-01-20 |
 | 6. TUI Foundation | 3/3 | Complete | 2026-01-20 |
-| 7. Pet System | 0/3 | Not started | - |
+| 7. Pet System | 2/3 | In progress | - |
 | 8. Graveyard | 0/3 | Not started | - |
