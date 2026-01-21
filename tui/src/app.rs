@@ -81,10 +81,8 @@ impl App {
     pub fn run(&mut self, terminal: &mut Terminal<impl Backend>) -> Result<()> {
         while !self.should_quit {
             // Check if we need to update state
-            if self.last_update.elapsed() >= UPDATE_INTERVAL {
-                if self.daemon_connected {
-                    self.update_state();
-                }
+            if self.last_update.elapsed() >= UPDATE_INTERVAL && self.daemon_connected {
+                self.update_state();
             }
 
             // Draw UI
