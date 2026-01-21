@@ -1,2 +1,14 @@
-# Compiled binary
-/daemonflow
+# Planning files
+.planning/
+
+# Go
+bin/
+daemonflow
+go.work
+
+# Rust
+tui/target/
+**/*.rs.bk
+
+# macOS
+.DS_Store
