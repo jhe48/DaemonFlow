@@ -5,6 +5,7 @@ use ratatui::prelude::*;
 
 use crate::ipc::client::IpcClient;
 use crate::ipc::protocol::StateResponse;
+use crate::pet::Pet;
 
 const UPDATE_INTERVAL: Duration = Duration::from_millis(500);
 
@@ -12,6 +13,7 @@ pub struct App {
     pub ipc_client: IpcClient,
     pub daemon_connected: bool,
     pub clock_state: Option<StateResponse>,
+    pub pet: Pet,
     pub last_error: Option<String>,
     pub last_update: Instant,
     pub should_quit: bool,
@@ -26,6 +28,7 @@ impl App {
             ipc_client,
             daemon_connected,
             clock_state: None,
+            pet: Pet::new(),
             last_error: None,
             last_update: Instant::now(),
             should_quit: false,
@@ -42,6 +45,8 @@ impl App {
     pub fn update_state(&mut self) {
         match self.ipc_client.get_state() {
             Ok(state) => {
+                // Update pet based on clock state
+                self.pet.update(&state.clock_state, state.earned_seconds);
                 self.clock_state = Some(state);
                 self.last_error = None;
                 self.daemon_connected = true;
