@@ -20,7 +20,8 @@ pub const HEALTHY: &str = r#"
 /// ASCII art for the resting pet state.
 /// Eyes closed, relaxed, with "zzz" indicator.
 pub const RESTING: &str = r#"
-   /\_/\   zzz
+   zzz
+   /\_/\
   ( -.- )
    > ~ <
   /|   |\
@@ -30,8 +31,9 @@ pub const RESTING: &str = r#"
 /// ASCII art for the tired pet state.
 /// Eyes droopy, slightly worried expression with exclamation.
 pub const TIRED: &str = r#"
+      !
    /\_/\
-  ( o_o ) !
+  ( o_o )
    > ~ <
   /|   |\
  (_|   |_)
@@ -40,10 +42,11 @@ pub const TIRED: &str = r#"
 /// ASCII art for the decaying pet state.
 /// X eyes, slumped posture, sweat drops - visually concerning.
 pub const DECAYING: &str = r#"
+    ' '
    /\_/\
   ( x_x )
-   > ~ < '
-  /|   |\ '
+   > ~ <
+  /|   |\
  (_|___|_)
 "#;
 
