@@ -17,6 +17,7 @@ import (
 	"github.com/jackyhe0402/daemonflow/internal/clock"
 	"github.com/jackyhe0402/daemonflow/internal/config"
 	"github.com/jackyhe0402/daemonflow/internal/git"
+	"github.com/jackyhe0402/daemonflow/internal/graveyard"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
 	"github.com/jackyhe0402/daemonflow/internal/task"
 	"github.com/jackyhe0402/daemonflow/internal/watcher"
@@ -38,6 +39,7 @@ type Daemon struct {
 	fileWatcher  *watcher.Watcher
 	taskTracker  *task.TaskTracker
 	clock        *clock.Clock
+	graveyard    *graveyard.Graveyard
 	startTime    time.Time
 	shutdownChan chan struct{}
 
@@ -130,8 +132,34 @@ func (d *Daemon) runForeground() error {
 	d.shutdownChan = make(chan struct{})
 	d.recentActivities = make([]activity.Activity, 0, MaxRecentActivities)
 
+	// Create graveyard for death logging
+	d.graveyard = graveyard.NewGraveyard(d.DataDir)
+	// Load existing death records (ignore error if file doesn't exist)
+	if err := d.graveyard.LoadRecords(); err != nil {
+		log.Printf("Warning: failed to load graveyard records: %v", err)
+	}
+
 	// Create and start Freedom Clock
 	d.clock = clock.NewClock(&d.Config.Earning)
+
+	// Wire death callback to log deaths to graveyard
+	d.clock.OnDeath = func(overtimeSeconds int, sessionEarned int) {
+		record := graveyard.DeathRecord{
+			Timestamp:       time.Now(),
+			OvertimeSeconds: -overtimeSeconds, // Convert negative to positive
+			SessionEarned:   sessionEarned,
+			Cause:           "overtime",
+		}
+		if err := d.graveyard.LogDeath(record); err != nil {
+			// Log error but don't crash - death logging is not critical
+			log.Printf("Failed to log death: %v", err)
+		} else {
+			log.Printf("Pet died after %dm %ds of overtime (total deaths: %d)",
+				record.OvertimeSeconds/60, record.OvertimeSeconds%60,
+				d.graveyard.GetDeathCount())
+		}
+	}
+
 	d.clock.Start()
 
 	// Start IPC server
