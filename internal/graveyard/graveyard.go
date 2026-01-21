@@ -296,6 +296,13 @@ func (g *Graveyard) LogResurrection() error {
 	return nil
 }
 
+// GetStreakInfo calculates and returns streak information from death records
+func (g *Graveyard) GetStreakInfo() StreakInfo {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return CalculateStreak(g.Records)
+}
+
 // parseDuration parses a duration string like "5m 23s" or "5m" or "30s" into seconds
 func parseDuration(s string) int {
 	s = strings.TrimSpace(s)
