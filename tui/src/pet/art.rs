@@ -58,13 +58,33 @@ pub const DEAD: &str = r#"
    \___/
 "#;
 
-/// Returns the ASCII art for a given pet state.
+use crate::pet::state::PetState;
+
+/// Returns the ASCII art for a given pet state enum.
+///
+/// # Arguments
+/// * `state` - The PetState enum value
+///
+/// # Returns
+/// The ASCII art string for the state.
+pub fn get_art_for_state(state: &PetState) -> &'static str {
+    match state {
+        PetState::Healthy => HEALTHY,
+        PetState::Resting => RESTING,
+        PetState::Tired => TIRED,
+        PetState::Decaying => DECAYING,
+        PetState::Dead => DEAD,
+    }
+}
+
+/// Returns the ASCII art for a given pet state name.
 ///
 /// # Arguments
 /// * `state` - The pet state name (case-insensitive)
 ///
 /// # Returns
 /// The ASCII art string for the state, or HEALTHY as default for unknown states.
+#[allow(dead_code)]
 pub fn get_art(state: &str) -> &'static str {
     match state.to_lowercase().as_str() {
         "healthy" => HEALTHY,
