@@ -16,6 +16,7 @@ const (
 	RequestTypeGetActivities = "get_activities" // Get recent activity events
 	RequestTypeStartBreak    = "start_break"    // Start break mode
 	RequestTypeEndBreak      = "end_break"      // End break mode
+	RequestTypeResurrect     = "resurrect"      // Resurrect the pet after death
 )
 
 // Request represents an IPC request message
@@ -49,6 +50,13 @@ type StateResponse struct {
 type ClockEventResponse struct {
 	PreviousState string `json:"previous_state"`
 	NewState      string `json:"new_state"`
+}
+
+// ResurrectResponse contains the result of a resurrection attempt
+type ResurrectResponse struct {
+	Success  bool   `json:"success"`
+	Message  string `json:"message"`
+	NewState string `json:"new_state"`
 }
 
 // GetActivitiesRequest contains parameters for getting activities

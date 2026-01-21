@@ -20,6 +20,7 @@ type DaemonInterface interface {
 	GetSessionEarned() int
 	StartBreak() (previousState, newState string)
 	EndBreak() (previousState, newState string)
+	Resurrect() (*ResurrectResponse, error)
 }
 
 // Server handles IPC connections from clients
@@ -146,6 +147,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleStartBreak()
 	case RequestTypeEndBreak:
 		resp, err = s.handleEndBreak()
+	case RequestTypeResurrect:
+		resp, err = s.handleResurrect()
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -223,6 +226,15 @@ func (s *Server) handleGetActivities(req Request) (*Response, error) {
 
 	activities := s.daemon.GetRecentActivitiesData(limit)
 	return NewSuccessResponse(GetActivitiesResponse{Activities: activities})
+}
+
+// handleResurrect handles resurrect requests
+func (s *Server) handleResurrect() (*Response, error) {
+	resResp, err := s.daemon.Resurrect()
+	if err != nil {
+		return nil, err
+	}
+	return NewSuccessResponse(resResp)
 }
 
 // SocketPath returns the socket path for this server

@@ -461,6 +461,38 @@ func (d *Daemon) EndBreak() (previousState, newState string) {
 	return "working", "working"
 }
 
+// Resurrect attempts to revive the pet after death
+// Returns an error if the pet is not dead
+func (d *Daemon) Resurrect() (*ipc.ResurrectResponse, error) {
+	// Check if pet is actually dead
+	if d.graveyard == nil || !d.graveyard.IsDead() {
+		return &ipc.ResurrectResponse{
+			Success:  false,
+			Message:  "Pet is not dead",
+			NewState: d.GetClockState(),
+		}, nil
+	}
+
+	// Log the resurrection
+	if err := d.graveyard.LogResurrection(); err != nil {
+		return nil, fmt.Errorf("failed to log resurrection: %w", err)
+	}
+
+	// Reset the clock (forfeit all earned time as recovery cost)
+	if d.clock != nil {
+		d.clock.Reset()
+	}
+
+	log.Printf("Pet resurrected! All earned time reset (total resurrections: %d)",
+		d.graveyard.GetResurrectionCount())
+
+	return &ipc.ResurrectResponse{
+		Success:  true,
+		Message:  "Pet resurrected! All earned time reset.",
+		NewState: d.GetClockState(),
+	}, nil
+}
+
 // Stop stops the running daemon
 func (d *Daemon) Stop() error {
 	pid, err := d.readPID()
