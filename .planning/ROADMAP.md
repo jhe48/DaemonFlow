@@ -107,7 +107,7 @@ Plans:
 
 Plans:
 - [x] 08-01: Death logging and GRAVEYARD.md format - Completed 2026-01-21
-- [ ] 08-02: Recovery mechanics and cost system
+- [x] 08-02: Recovery mechanics and cost system - Completed 2026-01-21
 - [ ] 08-03: Streak tracking and display
 
 ## Progress
@@ -124,4 +124,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Freedom Clock | 3/3 | Complete | 2026-01-20 |
 | 6. TUI Foundation | 3/3 | Complete | 2026-01-20 |
 | 7. Pet System | 3/3 | Complete | 2026-01-21 |
-| 8. Graveyard | 1/3 | In progress | - |
+| 8. Graveyard | 2/3 | In progress | - |

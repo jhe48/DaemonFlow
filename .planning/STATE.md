@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 8 of 8 (Graveyard)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-21 — Completed 08-01-PLAN.md
+Last activity: 2026-01-21 — Completed 08-02-PLAN.md
 
-Progress: █████████░ 93.75%
+Progress: █████████░ 96.88%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 17
 - Average duration: 5 min
-- Total execution time: 1 hour 17 min
+- Total execution time: 1 hour 20 min
 
 **By Phase:**
 
@@ -34,10 +34,10 @@ Progress: █████████░ 93.75%
 | 5. Freedom Clock | 3/3 ✓ | 5 min | 1.7 min |
 | 6. TUI Foundation | 3/3 ✓ | 9 min | 3 min |
 | 7. Pet System | 3/3 ✓ | 20 min | 6.7 min |
-| 8. Graveyard | 1/3 | 2 min | 2 min |
+| 8. Graveyard | 2/3 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-03 (4 min), 07-01 (2 min), 07-02 (3 min), 07-03 (15 min), 08-01 (2 min)
+- Last 5 plans: 07-01 (2 min), 07-02 (3 min), 07-03 (15 min), 08-01 (2 min), 08-02 (3 min)
 - Trend: Stable (fast)
 
 ## Accumulated Context
@@ -88,6 +88,9 @@ Recent decisions affecting current work:
 | 08-01 | DeathThresholdSeconds = -300 | Match TUI constant for death trigger |
 | 08-01 | OnDeath callback pattern | Event-based notification for death |
 | 08-01 | GRAVEYARD.md markdown table | Human-readable persistent death records |
+| 08-02 | Resurrection cost forfeits all earned time | Maintains stakes while allowing recovery |
+| 08-02 | IsDead() uses deaths > resurrections | Balance-based state detection |
+| 08-02 | GRAVEYARD.md extended with Resurrections section | Separate tracking for deaths and recoveries |
 
 ### Deferred Issues
 
@@ -100,5 +103,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 08-01-PLAN.md
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
