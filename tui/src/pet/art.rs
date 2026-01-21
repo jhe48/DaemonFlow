@@ -27,6 +27,37 @@ pub const RESTING: &str = r#"
  (_|   |_)
 "#;
 
+/// ASCII art for the tired pet state.
+/// Eyes droopy, slightly worried expression with exclamation.
+pub const TIRED: &str = r#"
+   /\_/\
+  ( o_o ) !
+   > ~ <
+  /|   |\
+ (_|   |_)
+"#;
+
+/// ASCII art for the decaying pet state.
+/// X eyes, slumped posture, sweat drops - visually concerning.
+pub const DECAYING: &str = r#"
+   /\_/\
+  ( x_x )
+   > ~ < '
+  /|   |\ '
+ (_|___|_)
+"#;
+
+/// ASCII art for the dead pet state.
+/// Gravestone - triggers emotional response to restart.
+pub const DEAD: &str = r#"
+    ___
+   /   \
+  | RIP |
+  |     |
+  |_____|
+   \___/
+"#;
+
 /// Returns the ASCII art for a given pet state.
 ///
 /// # Arguments
@@ -38,6 +69,9 @@ pub fn get_art(state: &str) -> &'static str {
     match state.to_lowercase().as_str() {
         "healthy" => HEALTHY,
         "resting" => RESTING,
+        "tired" => TIRED,
+        "decaying" => DECAYING,
+        "dead" => DEAD,
         _ => HEALTHY, // Default to healthy for unknown states
     }
 }
