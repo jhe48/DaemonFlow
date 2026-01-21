@@ -21,6 +21,7 @@ type DaemonInterface interface {
 	StartBreak() (previousState, newState string)
 	EndBreak() (previousState, newState string)
 	Resurrect() (*ResurrectResponse, error)
+	GetStreakInfo() (currentStreak, longestStreak, totalDeaths int)
 }
 
 // Server handles IPC connections from clients
@@ -187,10 +188,14 @@ func (s *Server) handleStop() (*Response, error) {
 
 // handleGetState handles get_state requests for TUI
 func (s *Server) handleGetState() (*Response, error) {
+	currentStreak, longestStreak, totalDeaths := s.daemon.GetStreakInfo()
 	state := StateResponse{
 		ClockState:    s.daemon.GetClockState(),
 		EarnedSeconds: s.daemon.GetEarnedSeconds(),
 		SessionEarned: s.daemon.GetSessionEarned(),
+		CurrentStreak: currentStreak,
+		LongestStreak: longestStreak,
+		TotalDeaths:   totalDeaths,
 	}
 	return NewSuccessResponse(state)
 }

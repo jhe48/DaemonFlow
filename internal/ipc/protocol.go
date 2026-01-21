@@ -44,6 +44,9 @@ type StateResponse struct {
 	ClockState    string `json:"clock_state"`     // "working", "break", "overtime"
 	EarnedSeconds int    `json:"earned_seconds"`  // Current balance (can be negative)
 	SessionEarned int    `json:"session_earned"`  // Earned this session
+	CurrentStreak int    `json:"current_streak"`  // Days without death
+	LongestStreak int    `json:"longest_streak"`  // Best streak ever
+	TotalDeaths   int    `json:"total_deaths"`    // Total deaths
 }
 
 // ClockEventResponse contains the result of a break state transition

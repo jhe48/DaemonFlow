@@ -461,6 +461,15 @@ func (d *Daemon) EndBreak() (previousState, newState string) {
 	return "working", "working"
 }
 
+// GetStreakInfo returns streak statistics from the graveyard
+func (d *Daemon) GetStreakInfo() (currentStreak, longestStreak, totalDeaths int) {
+	if d.graveyard == nil {
+		return 1, 1, 0 // Default: 1 day streak if no graveyard
+	}
+	info := d.graveyard.GetStreakInfo()
+	return info.CurrentStreak, info.LongestStreak, d.graveyard.GetDeathCount()
+}
+
 // Resurrect attempts to revive the pet after death
 // Returns an error if the pet is not dead
 func (d *Daemon) Resurrect() (*ipc.ResurrectResponse, error) {
