@@ -20,15 +20,24 @@ const (
 	StateOvertime ClockState = "overtime"
 )
 
+// DeathThresholdSeconds is the overtime threshold at which the pet dies
+// Matches TUI's DEATH_THRESHOLD_SECONDS (-300 = 5 minutes of overtime)
+const DeathThresholdSeconds = -300
+
 // Clock tracks earned break time and manages state transitions
 type Clock struct {
-	state         ClockState
-	earnedSeconds int // Total earned seconds (can go negative in overtime)
-	sessionEarned int // Earned this session (resets on daemon start)
-	earning       *EarningCalculator
-	mu            sync.RWMutex
-	ticker        *time.Ticker
-	stopChan      chan struct{}
+	state          ClockState
+	earnedSeconds  int // Total earned seconds (can go negative in overtime)
+	sessionEarned  int // Earned this session (resets on daemon start)
+	earning        *EarningCalculator
+	deathTriggered bool // Prevents multiple death events per overtime period
+	mu             sync.RWMutex
+	ticker         *time.Ticker
+	stopChan       chan struct{}
+
+	// OnDeath is called when the pet dies from extended overtime
+	// Parameters: overtimeSeconds (negative), sessionEarned (positive)
+	OnDeath func(overtimeSeconds int, sessionEarned int)
 }
 
 // NewClock creates a new Clock with the given earning configuration
@@ -80,6 +89,16 @@ func (c *Clock) tick() {
 	case StateOvertime:
 		// In overtime, continue decrementing (goes negative)
 		c.earnedSeconds--
+		// Check for death threshold
+		if c.earnedSeconds <= DeathThresholdSeconds && !c.deathTriggered {
+			c.deathTriggered = true
+			if c.OnDeath != nil {
+				// Call outside the lock to avoid deadlocks
+				overtimeSeconds := c.earnedSeconds
+				sessionEarned := c.sessionEarned
+				go c.OnDeath(overtimeSeconds, sessionEarned)
+			}
+		}
 	}
 }
 
@@ -131,6 +150,8 @@ func (c *Clock) EndBreak() (previousState, newState string) {
 	// EndBreak always returns to working, regardless of current state (break or overtime)
 	if c.state == StateBreak || c.state == StateOvertime {
 		c.state = StateWorking
+		// Reset death trigger so death can occur again if user goes back to overtime
+		c.deathTriggered = false
 	}
 	newState = string(c.state)
 	return
