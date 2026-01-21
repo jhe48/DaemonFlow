@@ -19,8 +19,8 @@ None
 - [x] **Phase 3: File Watcher** - Monitor file changes in project directory (Complete)
 - [x] **Phase 4: Task Tracking** - Checkbox-style task completion monitoring (Complete)
 - [x] **Phase 5: Freedom Clock** - Earning formula and countdown logic (Complete)
-- [ ] **Phase 6: TUI Foundation** - Rust TUI with ratatui, connect to daemon (Next)
-- [ ] **Phase 7: Pet System** - ASCII pet states reflecting productivity
+- [x] **Phase 6: TUI Foundation** - Rust TUI with ratatui, connect to daemon (Complete)
+- [ ] **Phase 7: Pet System** - ASCII pet states reflecting productivity (Next)
 - [ ] **Phase 8: Graveyard** - Death logging, recovery mechanics, streak management
 
 ## Phase Details
@@ -84,9 +84,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 06-01: Rust project setup with ratatui
-- [ ] 06-02: IPC client connecting to daemon
-- [ ] 06-03: Basic status display (clock, activity)
+- [x] 06-01: Rust project setup with ratatui - Completed 2026-01-20
+- [x] 06-02: IPC client connecting to daemon - Completed 2026-01-20
+- [x] 06-03: Basic status display (clock, activity) - Completed 2026-01-20
 
 ### Phase 7: Pet System
 **Goal**: ASCII pet with states reflecting productivity (healthy → decaying → dead)
@@ -122,6 +122,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. File Watcher | 2/2 | Complete | 2026-01-20 |
 | 4. Task Tracking | 2/2 | Complete | 2026-01-20 |
 | 5. Freedom Clock | 3/3 | Complete | 2026-01-20 |
-| 6. TUI Foundation | 0/3 | Not started | - |
+| 6. TUI Foundation | 3/3 | Complete | 2026-01-20 |
 | 7. Pet System | 0/3 | Not started | - |
 | 8. Graveyard | 0/3 | Not started | - |

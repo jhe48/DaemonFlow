@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-17)
 
 **Core value:** The daemon must work flawlessly in the background without intervention.
-**Current focus:** Phase 6 — TUI Foundation
+**Current focus:** Phase 7 — Pet System
 
 ## Current Position
 
-Phase: 5 of 8 (Freedom Clock)
+Phase: 6 of 8 (TUI Foundation)
 Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-01-20 — Completed 05-03-PLAN.md
+Last activity: 2026-01-20 — Completed 06-03-PLAN.md
 
-Progress: ██████░░░░ 55%
+Progress: ███████░░░ 65%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 5 min
-- Total execution time: 0.75 hours
+- Total plans completed: 13
+- Average duration: 4 min
+- Total execution time: 1 hour
 
 **By Phase:**
 
@@ -32,9 +32,10 @@ Progress: ██████░░░░ 55%
 | 3. File Watcher | 2/2 ✓ | 8 min | 4 min |
 | 4. Task Tracking | 2/2 ✓ | 4 min | 2 min |
 | 5. Freedom Clock | 3/3 ✓ | 5 min | 1.7 min |
+| 6. TUI Foundation | 3/3 ✓ | 9 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (2 min), 05-01 (1 min), 05-02 (2 min), 05-03 (2 min)
+- Last 5 plans: 05-02 (2 min), 05-03 (2 min), 06-02 (5 min), 06-03 (4 min)
 - Trend: Stable (fast)
 
 ## Accumulated Context
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 | 05-02 | Only earn time in working state | Logical: don't earn break time while on break |
 | 05-03 | Session tracking separate from total | Allows per-daemon-run statistics |
 | 05-03 | StartBreak/EndBreak return state transitions | UI feedback for state changes |
+| 06-02 | Connect-per-request IPC pattern | Simpler than persistent connection |
+| 06-02 | 4-byte big-endian length prefix | Match Go daemon protocol exactly |
+| 06-03 | 500ms state refresh interval | Balance responsiveness and daemon load |
+| 06-03 | Color-coded states | Green=working, yellow=break, red=overtime |
 
 ### Deferred Issues
 
@@ -83,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 05-03-PLAN.md (Phase 5 complete)
+Stopped at: Completed 06-03-PLAN.md (Phase 6 complete)
 Resume file: None
