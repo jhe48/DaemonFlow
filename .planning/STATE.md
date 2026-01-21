@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-17)
 ## Current Position
 
 Phase: 8 of 8 (Graveyard)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-21 — Completed 08-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-21 — Completed 08-03-PLAN.md
 
-Progress: █████████░ 96.88%
+Progress: ██████████ 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 5 min
-- Total execution time: 1 hour 20 min
+- Total execution time: 1 hour 23 min
 
 **By Phase:**
 
@@ -34,10 +34,10 @@ Progress: █████████░ 96.88%
 | 5. Freedom Clock | 3/3 ✓ | 5 min | 1.7 min |
 | 6. TUI Foundation | 3/3 ✓ | 9 min | 3 min |
 | 7. Pet System | 3/3 ✓ | 20 min | 6.7 min |
-| 8. Graveyard | 2/3 | 5 min | 2.5 min |
+| 8. Graveyard | 3/3 | 8 min | 2.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 07-01 (2 min), 07-02 (3 min), 07-03 (15 min), 08-01 (2 min), 08-02 (3 min)
+- Last 5 plans: 07-02 (3 min), 07-03 (15 min), 08-01 (2 min), 08-02 (3 min), 08-03 (3 min)
 - Trend: Stable (fast)
 
 ## Accumulated Context
@@ -91,6 +91,9 @@ Recent decisions affecting current work:
 | 08-02 | Resurrection cost forfeits all earned time | Maintains stakes while allowing recovery |
 | 08-02 | IsDead() uses deaths > resurrections | Balance-based state detection |
 | 08-02 | GRAVEYARD.md extended with Resurrections section | Separate tracking for deaths and recoveries |
+| 08-03 | Current streak = days since last death | 0 on death day, 1 next day |
+| 08-03 | Longest streak tracks max gap between deaths | Historical motivation tracking |
+| 08-03 | TUI serde(default) for streak fields | Backwards compatibility with older daemons |
 
 ### Deferred Issues
 
@@ -103,5 +106,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 08-02-PLAN.md
+Stopped at: Completed 08-03-PLAN.md - Milestone complete!
 Resume file: None
