@@ -68,15 +68,46 @@ fn render_clock_status(app: &App, frame: &mut Frame, area: Rect) {
                 _ => Color::White,
             };
 
-            let status_text = format!(
-                "State: {} | Earned: {} | Session: {}s",
-                state.clock_state.to_uppercase(),
-                time_str,
-                state.session_earned
-            );
+            // Build status line with streak info
+            let status_parts = [
+                format!("State: {}", state.clock_state.to_uppercase()),
+                format!("Earned: {}", time_str),
+            ];
 
-            let status = Paragraph::new(status_text)
-                .style(Style::default().fg(state_color))
+            // Add streak info (subtle styling)
+            let streak_color = if app.current_streak > 0 { Color::Green } else { Color::DarkGray };
+            let streak_text = if app.current_streak == 1 {
+                format!("Streak: {} day", app.current_streak)
+            } else {
+                format!("Streak: {} days", app.current_streak)
+            };
+
+            // Add deaths if any
+            let deaths_text = if app.total_deaths > 0 {
+                format!("Deaths: {}", app.total_deaths)
+            } else {
+                String::new()
+            };
+
+            // Create multi-line display
+            let line1 = status_parts.join(" | ");
+            let mut line2_parts = vec![streak_text];
+            if app.longest_streak > app.current_streak {
+                line2_parts.push(format!("(Best: {})", app.longest_streak));
+            }
+            if !deaths_text.is_empty() {
+                line2_parts.push(deaths_text);
+            }
+            let line2 = line2_parts.join(" | ");
+
+            // Use Line and Span for multi-color text
+            use ratatui::text::{Line, Span};
+            let text = vec![
+                Line::from(Span::styled(line1, Style::default().fg(state_color))),
+                Line::from(Span::styled(line2, Style::default().fg(streak_color))),
+            ];
+
+            let status = Paragraph::new(text)
                 .alignment(Alignment::Center)
                 .block(Block::default().borders(Borders::ALL).title("Clock"));
             frame.render_widget(status, area);

@@ -17,6 +17,10 @@ pub struct App {
     pub last_error: Option<String>,
     pub last_update: Instant,
     pub should_quit: bool,
+    // Streak tracking
+    pub current_streak: i32,
+    pub longest_streak: i32,
+    pub total_deaths: i32,
 }
 
 impl App {
@@ -32,6 +36,9 @@ impl App {
             last_error: None,
             last_update: Instant::now(),
             should_quit: false,
+            current_streak: 0,
+            longest_streak: 0,
+            total_deaths: 0,
         };
 
         // If connected, get initial state
@@ -47,6 +54,10 @@ impl App {
             Ok(state) => {
                 // Update pet based on clock state
                 self.pet.update(&state.clock_state, state.earned_seconds);
+                // Extract streak info
+                self.current_streak = state.current_streak;
+                self.longest_streak = state.longest_streak;
+                self.total_deaths = state.total_deaths;
                 self.clock_state = Some(state);
                 self.last_error = None;
                 self.daemon_connected = true;

@@ -28,6 +28,12 @@ pub struct StateResponse {
     pub clock_state: String,      // "working", "break", "overtime"
     pub earned_seconds: i32,      // Can be negative (overtime)
     pub session_earned: i32,      // Earned this session
+    #[serde(default)]
+    pub current_streak: i32,      // Days without death
+    #[serde(default)]
+    pub longest_streak: i32,      // Best streak ever
+    #[serde(default)]
+    pub total_deaths: i32,        // Total deaths
 }
 
 #[derive(Debug, Deserialize)]
