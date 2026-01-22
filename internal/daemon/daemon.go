@@ -19,6 +19,7 @@ import (
 	"github.com/jackyhe0402/daemonflow/internal/git"
 	"github.com/jackyhe0402/daemonflow/internal/graveyard"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
+	"github.com/jackyhe0402/daemonflow/internal/store"
 	"github.com/jackyhe0402/daemonflow/internal/task"
 	"github.com/jackyhe0402/daemonflow/internal/watcher"
 )
@@ -40,6 +41,7 @@ type Daemon struct {
 	taskTracker  *task.TaskTracker
 	clock        *clock.Clock
 	graveyard    *graveyard.Graveyard
+	store        *store.Store
 	startTime    time.Time
 	shutdownChan chan struct{}
 
@@ -119,6 +121,15 @@ func (d *Daemon) runForeground() error {
 	if err := os.MkdirAll(d.DataDir, 0755); err != nil {
 		return fmt.Errorf("failed to create data directory: %w", err)
 	}
+
+	// Open SQLite store
+	dbPath := filepath.Join(d.DataDir, "daemonflow.db")
+	s, err := store.New(dbPath)
+	if err != nil {
+		return fmt.Errorf("failed to open SQLite store: %w", err)
+	}
+	d.store = s
+	log.Printf("SQLite store opened: %s", dbPath)
 
 	// Write PID file
 	pid := os.Getpid()
@@ -209,6 +220,7 @@ func (d *Daemon) runForeground() error {
 			d.stopFileWatcher()
 			d.stopTaskTracker()
 			d.stopGitMonitor()
+			d.closeStore()
 			return nil
 		case <-d.shutdownChan:
 			log.Printf("Received shutdown request via IPC, shutting down...")
@@ -217,6 +229,7 @@ func (d *Daemon) runForeground() error {
 			d.stopFileWatcher()
 			d.stopTaskTracker()
 			d.stopGitMonitor()
+			d.closeStore()
 			return nil
 		case <-ticker.C:
 			log.Println("daemon running")
@@ -336,6 +349,23 @@ func (d *Daemon) stopClock() {
 	if d.clock != nil {
 		d.clock.Stop()
 	}
+}
+
+// closeStore closes the SQLite store if open
+func (d *Daemon) closeStore() {
+	if d.store != nil {
+		if err := d.store.Close(); err != nil {
+			log.Printf("Error closing SQLite store: %v", err)
+		} else {
+			log.Println("SQLite store closed")
+		}
+	}
+}
+
+// GetStore returns the SQLite store instance.
+// May be nil if daemon is not running.
+func (d *Daemon) GetStore() *store.Store {
+	return d.store
 }
 
 // OnActivity implements activity.ActivityListener
