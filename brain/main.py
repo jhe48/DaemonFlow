@@ -7,6 +7,7 @@ Usage:
     If --input is not provided, reads JSON from stdin.
 
 Actions:
+    ping    Returns health check status with version
     echo    Returns the input unchanged (placeholder for Phase 11)
 
 Exit codes:
@@ -17,6 +18,19 @@ Exit codes:
 import argparse
 import json
 import sys
+
+from brain import __version__
+
+
+def ping_action(data: dict) -> dict:
+    """Ping action - returns health check status with version.
+
+    Used by the daemon to verify Python brain is reachable and working.
+    """
+    return {
+        "status": "ok",
+        "version": __version__,
+    }
 
 
 def echo_action(data: dict) -> dict:
@@ -29,6 +43,7 @@ def echo_action(data: dict) -> dict:
 
 # Action registry
 ACTIONS = {
+    "ping": ping_action,
     "echo": echo_action,
 }
 
