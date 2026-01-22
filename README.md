@@ -28,7 +28,7 @@ You earn guilt-free break time through productive work. If you slack off, the cl
 1. **Work** - The daemon detects Git commits, staged changes, file saves, and task completions
 2. **Earn** - Each activity earns break time (configurable: commits = 5 min, file changes = 30 sec, etc.)
 3. **Break** - Start a break and the clock counts down. Your pet rests.
-4. **Consequences** - Run out of time? 5 minutes of overtime kills your pet. It's logged forever, but you can resurrect.
+4. **Consequences** - Run out of time? 5 minutes of overtime kills your pet. It's logged forever, but you can resurrect and get back to work.
 
 ## Installation
 
@@ -78,7 +78,7 @@ cd tui && cargo run --release
 | Key | Action |
 |-----|--------|
 | `b` | Toggle break mode (blocked when pet is dead) |
-| `x` | Resurrect dead pet (forfeits all earned time) |
+| `x` | Resurrect dead pet |
 | `r` | Refresh/reconnect to daemon |
 | `q` | Quit |
 
@@ -151,14 +151,14 @@ cat ~/.daemonflow/GRAVEYARD.md
 
 ## Resurrections
 
-| # | Death # | Date | Cost |
-|---|---------|------|------|
-| 1 | 1 | 2026-01-21 10:35 | Forfeited 45m earned |
+| # | Death # | Date |
+|---|---------|------|
+| 1 | 1 | 2026-01-21 10:35 |
 ```
 
 ### Resurrection
 
-When your pet dies, press `x` in the TUI to resurrect. The cost is **all your currently earned break time resets to zero**. You start fresh with no banked time.
+When your pet dies, press `x` in the TUI to resurrect. Your pet revives and you must immediately start working to earn break time again.
 
 Deaths are permanent records - they stay in the Graveyard forever. Your streak resets to 0 on death.
 
@@ -193,7 +193,3 @@ All DaemonFlow data is stored in `~/.daemonflow/`:
   +-- daemonflow.sock
   +-- GRAVEYARD.md
 ```
-
-## License
-
-MIT
