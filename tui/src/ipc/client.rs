@@ -95,6 +95,17 @@ impl IpcClient {
     pub fn is_daemon_running(&self) -> bool {
         self.ping().unwrap_or(false)
     }
+
+    pub fn resurrect(&self) -> Result<ResurrectResponse> {
+        let request = Request { request_type: REQUEST_TYPE_RESURRECT.to_string(), payload: None };
+        let response = self.send_request(&request)?;
+        if !response.success {
+            bail!("resurrect failed: {}", response.error.unwrap_or_default());
+        }
+        let data = response.data.context("No data in response")?;
+        let res: ResurrectResponse = serde_json::from_value(data)?;
+        Ok(res)
+    }
 }
 
 impl Default for IpcClient {

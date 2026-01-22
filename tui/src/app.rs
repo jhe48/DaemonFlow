@@ -75,6 +75,12 @@ impl App {
             return;
         }
 
+        // Don't allow ending break if pet is dead - must resurrect first
+        if self.pet.get_state().is_dead() {
+            self.last_error = Some("Pet is dead! Press 'x' to resurrect.".to_string());
+            return;
+        }
+
         if let Some(state) = &self.clock_state {
             let result = if state.clock_state == "working" {
                 self.ipc_client.start_break()
@@ -124,6 +130,24 @@ impl App {
                                 }
                                 if self.daemon_connected {
                                     self.update_state();
+                                }
+                            }
+                            KeyCode::Char('x') => {
+                                // Resurrect dead pet
+                                if self.daemon_connected && self.pet.get_state().is_dead() {
+                                    match self.ipc_client.resurrect() {
+                                        Ok(res) => {
+                                            if res.success {
+                                                self.last_error = Some("Pet resurrected! All earned time forfeited.".to_string());
+                                                self.update_state();
+                                            } else {
+                                                self.last_error = Some(res.message);
+                                            }
+                                        }
+                                        Err(e) => {
+                                            self.last_error = Some(e.to_string());
+                                        }
+                                    }
                                 }
                             }
                             _ => {}

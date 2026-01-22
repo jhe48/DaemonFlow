@@ -7,6 +7,7 @@ pub const REQUEST_TYPE_STATUS: &str = "status";
 pub const REQUEST_TYPE_GET_STATE: &str = "get_state";
 pub const REQUEST_TYPE_START_BREAK: &str = "start_break";
 pub const REQUEST_TYPE_END_BREAK: &str = "end_break";
+pub const REQUEST_TYPE_RESURRECT: &str = "resurrect";
 
 #[derive(Debug, Serialize)]
 pub struct Request {
@@ -40,4 +41,10 @@ pub struct StateResponse {
 pub struct ClockEventResponse {
     pub previous_state: String,
     pub new_state: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ResurrectResponse {
+    pub success: bool,
+    pub message: String,
 }

@@ -14,7 +14,7 @@ pub const HEALTHY: &str = r#"
   ( o.o )
    > ^ <
   /|   |\
- (_|   |_)
+  (_|   |_)
 "#;
 
 /// ASCII art for the resting pet state.
@@ -25,40 +25,38 @@ pub const RESTING: &str = r#"
   ( -.- )
    > ~ <
   /|   |\
- (_|   |_)
+  (_|   |_)
 "#;
 
 /// ASCII art for the tired pet state.
 /// Eyes droopy, slightly worried expression with exclamation.
 pub const TIRED: &str = r#"
-      !
+  !
    /\_/\
   ( o_o )
    > ~ <
   /|   |\
- (_|   |_)
+  (_|   |_)
 "#;
 
 /// ASCII art for the decaying pet state.
 /// X eyes, slumped posture, sweat drops - visually concerning.
 pub const DECAYING: &str = r#"
-    ' '
-   /\_/\
+  ' /\_/\ '
   ( x_x )
    > ~ <
   /|   |\
- (_|___|_)
+  (_|___|_)
 "#;
 
 /// ASCII art for the dead pet state.
 /// Gravestone - triggers emotional response to restart.
 pub const DEAD: &str = r#"
-    ___
-   /   \
+   _____
+  |     |
   | RIP |
   |     |
   |_____|
-   \___/
 "#;
 
 use crate::pet::state::PetState;
