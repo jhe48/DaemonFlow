@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/jackyhe0402/daemonflow/internal/activity"
+	"github.com/jackyhe0402/daemonflow/internal/brain"
 	"github.com/jackyhe0402/daemonflow/internal/clock"
 	"github.com/jackyhe0402/daemonflow/internal/config"
 	"github.com/jackyhe0402/daemonflow/internal/git"
@@ -29,21 +30,22 @@ const MaxRecentActivities = 50
 
 // Daemon manages the DaemonFlow background process
 type Daemon struct {
-	Running      bool
-	PIDFile      string
-	DataDir      string
-	ConfigPath   string
-	Foreground   bool
-	Config       *config.Config
-	ipcServer    *ipc.Server
-	gitMonitor   *git.Monitor
-	fileWatcher  *watcher.Watcher
-	taskTracker  *task.TaskTracker
-	clock        *clock.Clock
-	graveyard    *graveyard.Graveyard
-	store        *store.Store
-	startTime    time.Time
-	shutdownChan chan struct{}
+	Running       bool
+	PIDFile       string
+	DataDir       string
+	ConfigPath    string
+	Foreground    bool
+	Config        *config.Config
+	ipcServer     *ipc.Server
+	gitMonitor    *git.Monitor
+	fileWatcher   *watcher.Watcher
+	taskTracker   *task.TaskTracker
+	clock         *clock.Clock
+	graveyard     *graveyard.Graveyard
+	store         *store.Store
+	brainExecutor *brain.Executor
+	startTime     time.Time
+	shutdownChan  chan struct{}
 
 	// Activity tracking
 	recentActivities []activity.Activity
@@ -130,6 +132,13 @@ func (d *Daemon) runForeground() error {
 	}
 	d.store = s
 	log.Printf("SQLite store opened: %s", dbPath)
+
+	// Initialize brain executor (optional - Python may not be available)
+	if err := d.initBrainExecutor(); err != nil {
+		log.Printf("Warning: Python brain not available: %v", err)
+		// Brain executor is optional - daemon can still function without it
+		d.brainExecutor = nil
+	}
 
 	// Write PID file
 	pid := os.Getpid()
@@ -366,6 +375,69 @@ func (d *Daemon) closeStore() {
 // May be nil if daemon is not running.
 func (d *Daemon) GetStore() *store.Store {
 	return d.store
+}
+
+// initBrainExecutor initializes the Python brain executor.
+// Returns error if Python is not available or brain package not found.
+func (d *Daemon) initBrainExecutor() error {
+	executor := brain.NewExecutor()
+
+	// Derive brain directory from executable path
+	// During development: executable is in cmd/daemonflow/, brain is in project root
+	// In production: brain package should be alongside executable or in a configured path
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("failed to get executable path: %w", err)
+	}
+
+	// Walk up from executable to find brain/ directory
+	brainDir := ""
+	dir := filepath.Dir(exePath)
+	for i := 0; i < 5; i++ { // Max 5 levels up
+		if _, err := os.Stat(filepath.Join(dir, "brain", "__init__.py")); err == nil {
+			brainDir = dir
+			break
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+
+	// Also try current working directory as fallback
+	if brainDir == "" {
+		if cwd, err := os.Getwd(); err == nil {
+			if _, err := os.Stat(filepath.Join(cwd, "brain", "__init__.py")); err == nil {
+				brainDir = cwd
+			}
+		}
+	}
+
+	if brainDir == "" {
+		return fmt.Errorf("brain package not found (searched near executable and cwd)")
+	}
+
+	executor.SetBrainDir(brainDir)
+
+	// Health check with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	version, err := executor.Ping(ctx)
+	if err != nil {
+		return fmt.Errorf("brain health check failed: %w", err)
+	}
+
+	d.brainExecutor = executor
+	log.Printf("Python brain ready: version %s (dir: %s)", version, brainDir)
+	return nil
+}
+
+// GetBrainExecutor returns the brain executor instance.
+// May be nil if Python is not available or brain not initialized.
+func (d *Daemon) GetBrainExecutor() *brain.Executor {
+	return d.brainExecutor
 }
 
 // OnActivity implements activity.ActivityListener
