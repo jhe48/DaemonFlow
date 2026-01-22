@@ -98,3 +98,32 @@ func (e *Executor) Execute(ctx context.Context, action string, input interface{}
 
 	return json.RawMessage(output), nil
 }
+
+// PingResponse represents the response from a ping health check.
+type PingResponse struct {
+	Status  string `json:"status"`
+	Version string `json:"version"`
+}
+
+// Ping checks if the Python brain is reachable and returns its version.
+// Returns version string on success, error if Python or brain unavailable.
+func (e *Executor) Ping(ctx context.Context) (string, error) {
+	// Call Execute with action="ping" and empty input
+	result, err := e.Execute(ctx, "ping", map[string]interface{}{})
+	if err != nil {
+		return "", fmt.Errorf("ping failed: %w", err)
+	}
+
+	// Parse response for status and version
+	var resp PingResponse
+	if err := json.Unmarshal(result, &resp); err != nil {
+		return "", fmt.Errorf("failed to parse ping response: %w", err)
+	}
+
+	// Verify status is "ok"
+	if resp.Status != "ok" {
+		return "", fmt.Errorf("ping returned non-ok status: %s", resp.Status)
+	}
+
+	return resp.Version, nil
+}

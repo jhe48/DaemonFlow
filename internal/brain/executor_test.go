@@ -229,3 +229,52 @@ func TestExecute_ComplexNestedInput(t *testing.T) {
 		t.Errorf("Expected nested.deep.value=123, got %v", deep["value"])
 	}
 }
+
+func TestPing_Success(t *testing.T) {
+	projectRoot := getProjectRoot()
+	if projectRoot == "" {
+		t.Skip("Could not find project root (go.mod)")
+	}
+
+	executor := NewExecutor()
+	executor.SetBrainDir(projectRoot)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	version, err := executor.Ping(ctx)
+	if err != nil {
+		t.Fatalf("Ping failed: %v", err)
+	}
+
+	// Verify version is non-empty
+	if version == "" {
+		t.Error("Expected non-empty version string")
+	}
+
+	// Verify version format (should be semver-ish: X.Y.Z)
+	if len(version) < 5 {
+		t.Errorf("Version string seems too short: %s", version)
+	}
+
+	t.Logf("Brain version: %s", version)
+}
+
+func TestPing_ContextCancellation(t *testing.T) {
+	projectRoot := getProjectRoot()
+	if projectRoot == "" {
+		t.Skip("Could not find project root (go.mod)")
+	}
+
+	executor := NewExecutor()
+	executor.SetBrainDir(projectRoot)
+
+	// Create an already-cancelled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := executor.Ping(ctx)
+	if err == nil {
+		t.Error("Expected error for cancelled context, got nil")
+	}
+}
