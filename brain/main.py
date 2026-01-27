@@ -7,8 +7,11 @@ Usage:
     If --input is not provided, reads JSON from stdin.
 
 Actions:
-    ping    Returns health check status with version
-    echo    Returns the input unchanged (placeholder for Phase 11)
+    ping              Returns health check status with version
+    echo              Returns the input unchanged
+    parse_recurring   Parse natural language text for recurring patterns
+                      Input: {"text": "task text"}
+                      Output: {"recurring": true/false, "rrule": "...", ...}
 
 Exit codes:
     0   Success
@@ -20,6 +23,7 @@ import json
 import sys
 
 from brain import __version__
+from brain.recurring.parser import parse_recurrence
 
 
 def ping_action(data: dict) -> dict:
@@ -36,15 +40,46 @@ def ping_action(data: dict) -> dict:
 def echo_action(data: dict) -> dict:
     """Echo action - returns input unchanged.
 
-    Placeholder for future intelligent actions in Phase 11.
+    Placeholder for future intelligent actions.
     """
     return data
+
+
+def parse_recurring_action(data: dict) -> dict:
+    """Parse recurring action - detect recurring patterns in task text.
+
+    Parses natural language text to detect recurring patterns like
+    "every friday", "daily at 9am", etc. and returns an RRULE string.
+
+    Args:
+        data: Dict with "text" key containing the task text to parse.
+
+    Returns:
+        Dict with:
+            - recurring: True if text contains recurring pattern, False otherwise
+            - rrule: RFC 5545 RRULE string (only if recurring is True)
+            - clean_text: Task text with recurrence words removed (only if recurring)
+            - original_text: The original input text (only if recurring)
+    """
+    text = data.get("text", "")
+    result = parse_recurrence(text)
+
+    if result:
+        return {
+            "recurring": True,
+            "rrule": result["rrule"],
+            "clean_text": result["clean_text"],
+            "original_text": result["original_text"],
+        }
+    else:
+        return {"recurring": False}
 
 
 # Action registry
 ACTIONS = {
     "ping": ping_action,
     "echo": echo_action,
+    "parse_recurring": parse_recurring_action,
 }
 
 
