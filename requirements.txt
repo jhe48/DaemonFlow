@@ -1,0 +1,6 @@
+# DaemonFlow Python Brain dependencies
+# Python 3.12+
+
+# Recurring task parsing
+recurrent==0.4.1
+python-dateutil>=2.8.0
