@@ -68,14 +68,14 @@ Plans:
 
 #### Phase 11: Recurring Task Parser
 
-**Goal**: dateparser integration, frequency string parsing, task unrolling
+**Goal**: Natural language recurring pattern detection and RRULE generation
 **Depends on**: Phase 10
-**Research**: Likely (new library integration)
-**Research topics**: dateparser API, frequency string formats, Python CLI patterns
-**Plans**: TBD
+**Research**: Complete (recurrent library, RFC 5545 RRULEs)
+**Plans**: 2
 
 Plans:
-- [ ] 11-01: TBD
+- [x] 11-01: Recurring patterns module and parse_recurring action (completed 2026-01-27)
+- [ ] 11-02: Recurring task unroller
 
 #### Phase 12: Global Task Sync
 
@@ -113,7 +113,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 9. SQLite Foundation | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
-| 11. Recurring Task Parser | v2.0 | 0/? | Not started | - |
+| 11. Recurring Task Parser | v2.0 | 1/2 | In progress | - |
 | 12. Global Task Sync | v2.0 | 0/? | Not started | - |
 | 13. Pet Evolution | v2.0 | 0/? | Not started | - |
 | 14. Conflict Resolution & Polish | v2.0 | 0/? | Not started | - |
