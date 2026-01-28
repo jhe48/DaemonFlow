@@ -99,7 +99,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [x] 13-01: Pet evolution phase plan (completed 2026-01-28)
+- [x] 13-01: Pet state CRUD and XP system (completed 2026-01-28)
 - [x] 13-02: Level/XP IPC extension (completed 2026-01-28)
 - [ ] 13-03: XP bar UI component
 - [ ] 13-04: Pet evolution sprites
