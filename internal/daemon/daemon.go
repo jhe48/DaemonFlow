@@ -503,6 +503,55 @@ func (d *Daemon) GetBrainExecutor() *brain.Executor {
 	return d.brainExecutor
 }
 
+// GetGlobalTasks returns tasks from all projects, sorted by priority
+func (d *Daemon) GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]ipc.TaskData, int, error) {
+	if d.store == nil {
+		return nil, 0, fmt.Errorf("store not initialized")
+	}
+
+	var tasks []store.Task
+	var err error
+
+	if projectPath != "" {
+		tasks, err = d.store.GetTasksByProject(projectPath)
+	} else {
+		tasks, err = d.store.GetTasksSortedByPriority()
+	}
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Filter and convert
+	result := make([]ipc.TaskData, 0, len(tasks))
+	for _, t := range tasks {
+		if !includeCompleted && t.Completed {
+			continue
+		}
+
+		data := ipc.TaskData{
+			ID:            t.ID,
+			ProjectPath:   t.ProjectPath,
+			ProjectName:   t.ProjectName,
+			Text:          t.Text,
+			Completed:     t.Completed,
+			PriorityScore: t.PriorityScore,
+			CreatedAt:     t.CreatedAt.Format(time.RFC3339),
+		}
+		if t.DueDate != nil {
+			data.DueDate = t.DueDate.Format(time.RFC3339)
+		}
+
+		result = append(result, data)
+
+		if len(result) >= limit {
+			break
+		}
+	}
+
+	return result, len(tasks), nil
+}
+
 // OnActivity implements activity.ActivityListener
 func (d *Daemon) OnActivity(act activity.Activity) {
 	d.activityMu.Lock()
