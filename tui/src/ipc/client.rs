@@ -106,6 +106,24 @@ impl IpcClient {
         let res: ResurrectResponse = serde_json::from_value(data)?;
         Ok(res)
     }
+
+    pub fn get_tasks(&self, limit: i32) -> Result<GetTasksResponse> {
+        let payload = serde_json::json!({
+            "limit": limit,
+            "include_completed": false
+        });
+        let request = Request {
+            request_type: REQUEST_TYPE_GET_TASKS.to_string(),
+            payload: Some(payload),
+        };
+        let response = self.send_request(&request)?;
+        if !response.success {
+            bail!("get_tasks failed: {}", response.error.unwrap_or_default());
+        }
+        let data = response.data.context("No data in response")?;
+        let tasks: GetTasksResponse = serde_json::from_value(data)?;
+        Ok(tasks)
+    }
 }
 
 impl Default for IpcClient {
