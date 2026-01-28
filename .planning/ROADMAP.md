@@ -99,7 +99,10 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 13-01: TBD
+- [x] 13-01: Pet evolution phase plan (completed 2026-01-28)
+- [x] 13-02: Level/XP IPC extension (completed 2026-01-28)
+- [ ] 13-03: XP bar UI component
+- [ ] 13-04: Pet evolution sprites
 
 #### Phase 14: Conflict Resolution & Polish
 
@@ -119,5 +122,5 @@ Plans:
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 12. Global Task Sync | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 13. Pet Evolution | v2.0 | 0/? | Not started | - |
+| 13. Pet Evolution | v2.0 | 2/4 | In progress | - |
 | 14. Conflict Resolution & Polish | v2.0 | 0/? | Not started | - |
