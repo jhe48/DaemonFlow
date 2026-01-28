@@ -4,7 +4,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use ratatui::prelude::*;
 
 use crate::ipc::client::IpcClient;
-use crate::ipc::protocol::StateResponse;
+use crate::ipc::protocol::{StateResponse, TaskData};
 use crate::pet::Pet;
 
 const UPDATE_INTERVAL: Duration = Duration::from_millis(500);
@@ -21,6 +21,9 @@ pub struct App {
     pub current_streak: i32,
     pub longest_streak: i32,
     pub total_deaths: i32,
+    // Task list
+    pub tasks: Vec<TaskData>,
+    pub task_scroll: usize,
 }
 
 impl App {
@@ -39,6 +42,8 @@ impl App {
             current_streak: 0,
             longest_streak: 0,
             total_deaths: 0,
+            tasks: Vec::new(),
+            task_scroll: 0,
         };
 
         // If connected, get initial state
@@ -67,7 +72,23 @@ impl App {
                 self.daemon_connected = false;
             }
         }
+        // Also update tasks
+        self.update_tasks();
         self.last_update = Instant::now();
+    }
+
+    pub fn update_tasks(&mut self) {
+        if self.daemon_connected {
+            match self.ipc_client.get_tasks(20) {
+                Ok(response) => {
+                    self.tasks = response.tasks;
+                }
+                Err(_) => {
+                    // Don't clear tasks on error, just log
+                    // Tasks are less critical than pet state
+                }
+            }
+        }
     }
 
     pub fn toggle_break(&mut self) {
@@ -148,6 +169,18 @@ impl App {
                                             self.last_error = Some(e.to_string());
                                         }
                                     }
+                                }
+                            }
+                            KeyCode::Char('j') | KeyCode::Down => {
+                                // Scroll tasks down
+                                if !self.tasks.is_empty() && self.task_scroll < self.tasks.len().saturating_sub(1) {
+                                    self.task_scroll += 1;
+                                }
+                            }
+                            KeyCode::Char('k') | KeyCode::Up => {
+                                // Scroll tasks up
+                                if self.task_scroll > 0 {
+                                    self.task_scroll = self.task_scroll.saturating_sub(1);
                                 }
                             }
                             _ => {}
