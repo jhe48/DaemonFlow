@@ -163,7 +163,7 @@ func (d *Daemon) runForeground() error {
 	// Create and start Freedom Clock
 	d.clock = clock.NewClock(&d.Config.Earning)
 
-	// Wire death callback to log deaths to graveyard
+	// Wire death callback to log deaths to graveyard and sync to SQLite
 	d.clock.OnDeath = func(overtimeSeconds int, sessionEarned int) {
 		record := graveyard.DeathRecord{
 			Timestamp:       time.Now(),
@@ -179,7 +179,12 @@ func (d *Daemon) runForeground() error {
 				record.OvertimeSeconds/60, record.OvertimeSeconds%60,
 				d.graveyard.GetDeathCount())
 		}
+		// Sync graveyard stats to SQLite after death
+		d.syncGraveyardToStore()
 	}
+
+	// Initial sync of graveyard stats to SQLite
+	d.syncGraveyardToStore()
 
 	d.clock.Start()
 
@@ -569,6 +574,43 @@ func (d *Daemon) OnActivity(act activity.Activity) {
 	if d.clock != nil {
 		d.clock.OnActivity(act)
 	}
+
+	// Award XP based on activity type
+	d.awardXPForActivity(act)
+}
+
+// awardXPForActivity awards experience points based on activity type.
+// XP values:
+//   - Commit: 10 XP
+//   - Stage: 2 XP
+//   - File save/change: 1 XP
+//   - Task complete: 5 XP
+func (d *Daemon) awardXPForActivity(act activity.Activity) {
+	if d.store == nil {
+		return // Store not initialized
+	}
+
+	var xpAmount int
+	switch act.Type {
+	case activity.GitCommit:
+		xpAmount = 10
+	case activity.GitStage:
+		xpAmount = 2
+	case activity.FileChange:
+		xpAmount = 1
+	case activity.TaskComplete:
+		xpAmount = 5
+	default:
+		return // No XP for other activity types (e.g., branch switch)
+	}
+
+	if xpAmount > 0 {
+		if _, err := d.store.AddExperience(xpAmount); err != nil {
+			log.Printf("Warning: failed to award XP for %s: %v", act.Type, err)
+		} else {
+			log.Printf("Awarded %d XP for %s", xpAmount, act.Type)
+		}
+	}
 }
 
 // GetRecentActivities returns the most recent N activities
@@ -721,6 +763,9 @@ func (d *Daemon) Resurrect() (*ipc.ResurrectResponse, error) {
 		d.clock.Reset()
 	}
 
+	// Sync graveyard stats to SQLite after resurrection
+	d.syncGraveyardToStore()
+
 	log.Printf("Pet resurrected! All earned time reset (total resurrections: %d)",
 		d.graveyard.GetResurrectionCount())
 
@@ -729,6 +774,31 @@ func (d *Daemon) Resurrect() (*ipc.ResurrectResponse, error) {
 		Message:  "Pet resurrected! All earned time reset.",
 		NewState: d.GetClockState(),
 	}, nil
+}
+
+// syncGraveyardToStore syncs graveyard statistics (streaks, deaths, resurrections) to SQLite.
+// Called on daemon start, after death, and after resurrection.
+func (d *Daemon) syncGraveyardToStore() {
+	if d.store == nil || d.graveyard == nil {
+		return
+	}
+
+	streakInfo := d.graveyard.GetStreakInfo()
+	totalDeaths := d.graveyard.GetDeathCount()
+	totalResurrections := d.graveyard.GetResurrectionCount()
+
+	err := d.store.SyncGraveyardStats(
+		streakInfo.CurrentStreak,
+		streakInfo.LongestStreak,
+		totalDeaths,
+		totalResurrections,
+	)
+	if err != nil {
+		log.Printf("Warning: failed to sync graveyard stats to SQLite: %v", err)
+	} else {
+		log.Printf("Synced graveyard stats: streak=%d/%d, deaths=%d, resurrections=%d",
+			streakInfo.CurrentStreak, streakInfo.LongestStreak, totalDeaths, totalResurrections)
+	}
 }
 
 // Stop stops the running daemon
