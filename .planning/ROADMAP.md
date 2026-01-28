@@ -86,7 +86,7 @@ Plans:
 
 Plans:
 - [x] 12-01: Config & schema foundation (completed 2026-01-28)
-- [ ] 12-02: Multi-tracker implementation
+- [x] 12-02: Task sync engine (completed 2026-01-28)
 - [ ] 12-03: Priority sync function
 - [ ] 12-04: TUI global view
 - [ ] 12-05: Integration testing
@@ -118,6 +118,6 @@ Plans:
 | 9. SQLite Foundation | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
-| 12. Global Task Sync | v2.0 | 1/5 | In progress | - |
+| 12. Global Task Sync | v2.0 | 2/5 | In progress | - |
 | 13. Pet Evolution | v2.0 | 0/? | Not started | - |
 | 14. Conflict Resolution & Polish | v2.0 | 0/? | Not started | - |
