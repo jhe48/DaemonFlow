@@ -1,5 +1,5 @@
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 use crate::app::App;
 use crate::pet::{Pet, PetState};
 
@@ -11,8 +11,9 @@ pub fn render(app: &App, frame: &mut Frame) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3),   // Header
-            Constraint::Min(12),     // Pet display (primary focus)
+            Constraint::Min(10),     // Pet display (primary focus)
             Constraint::Length(5),   // Clock status
+            Constraint::Length(8),   // Task list
             Constraint::Length(3),   // Controls help
         ])
         .split(area);
@@ -30,16 +31,19 @@ pub fn render(app: &App, frame: &mut Frame) {
     // Clock status
     render_clock_status(app, frame, chunks[2]);
 
+    // Task list
+    render_tasks(app, frame, chunks[3]);
+
     // Controls
     let controls = if app.daemon_connected {
-        "q: quit | b: toggle break | r: refresh"
+        "q: quit | b: toggle break | r: refresh | j/k: scroll tasks"
     } else {
         "q: quit | Daemon not running - start with: daemonflow start"
     };
     let controls_widget = Paragraph::new(controls)
         .style(Style::default().fg(Color::DarkGray))
         .alignment(Alignment::Center);
-    frame.render_widget(controls_widget, chunks[3]);
+    frame.render_widget(controls_widget, chunks[3 + 1]);
 }
 
 fn render_clock_status(app: &App, frame: &mut Frame, area: Rect) {
@@ -123,6 +127,48 @@ fn render_clock_status(app: &App, frame: &mut Frame, area: Rect) {
             frame.render_widget(widget, area);
         }
     }
+}
+
+/// Render the global task list.
+fn render_tasks(app: &App, frame: &mut Frame, area: Rect) {
+    let block = Block::default()
+        .title(" Tasks ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::DarkGray));
+
+    if app.tasks.is_empty() {
+        let text = Paragraph::new("No tasks")
+            .style(Style::default().fg(Color::DarkGray))
+            .block(block);
+        frame.render_widget(text, area);
+        return;
+    }
+
+    let items: Vec<ListItem> = app.tasks.iter()
+        .skip(app.task_scroll)
+        .take(area.height.saturating_sub(2) as usize) // Account for borders
+        .map(|task| {
+            let checkbox = if task.completed { "[x]" } else { "[ ]" };
+            let due = task.due_date.as_ref()
+                .map(|d| {
+                    // Just date part if longer than 10 chars
+                    if d.len() >= 10 {
+                        format!(" ({})", &d[..10])
+                    } else {
+                        format!(" ({})", d)
+                    }
+                })
+                .unwrap_or_default();
+            let text = format!("{} {} {}{}", checkbox, task.project_name, task.text, due);
+            ListItem::new(text)
+        })
+        .collect();
+
+    let list = List::new(items)
+        .block(block)
+        .style(Style::default().fg(Color::White));
+
+    frame.render_widget(list, area);
 }
 
 /// Render the pet display with state-based coloring.
