@@ -177,6 +177,79 @@ func (s *Store) MarkTaskComplete(id int64) error {
 	return err
 }
 
+// GetTaskTextsByProject returns just the task texts for a project (for stale detection).
+func (s *Store) GetTaskTextsByProject(projectPath string) ([]string, error) {
+	rows, err := s.db.Query(`
+		SELECT text FROM tasks WHERE project_path = ?
+	`, projectPath)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var texts []string
+	for rows.Next() {
+		var text string
+		if err := rows.Scan(&text); err != nil {
+			return nil, err
+		}
+		texts = append(texts, text)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return texts, nil
+}
+
+// DeleteTasksByProjectExcept deletes all tasks for a project except those with texts in keepTexts.
+// If keepTexts is empty, deletes all tasks for the project.
+func (s *Store) DeleteTasksByProjectExcept(projectPath string, keepTexts []string) error {
+	if len(keepTexts) == 0 {
+		// Delete all tasks for this project
+		_, err := s.db.Exec(`DELETE FROM tasks WHERE project_path = ?`, projectPath)
+		return err
+	}
+
+	// Build query with placeholders for keepTexts
+	// DELETE FROM tasks WHERE project_path = ? AND text NOT IN (?, ?, ...)
+	placeholders := make([]string, len(keepTexts))
+	args := make([]interface{}, len(keepTexts)+1)
+	args[0] = projectPath
+
+	for i, text := range keepTexts {
+		placeholders[i] = "?"
+		args[i+1] = text
+	}
+
+	query := `DELETE FROM tasks WHERE project_path = ? AND text NOT IN (` + joinStrings(placeholders, ",") + `)`
+	_, err := s.db.Exec(query, args...)
+	return err
+}
+
+// UpdatePriorityScore updates the priority_score for a task by ID.
+func (s *Store) UpdatePriorityScore(id int64, score int) error {
+	now := time.Now().UTC().Format(time.RFC3339)
+	_, err := s.db.Exec(`
+		UPDATE tasks SET priority_score = ?, updated_at = ? WHERE id = ?
+	`, score, now, id)
+	return err
+}
+
+// joinStrings joins strings with a separator (helper to avoid importing strings package).
+func joinStrings(strs []string, sep string) string {
+	if len(strs) == 0 {
+		return ""
+	}
+	result := strs[0]
+	for i := 1; i < len(strs); i++ {
+		result += sep + strs[i]
+	}
+	return result
+}
+
 // scanTasks scans rows into a slice of Task structs.
 func scanTasks(rows *sql.Rows) ([]Task, error) {
 	var tasks []Task
