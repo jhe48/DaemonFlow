@@ -39,7 +39,8 @@ type Daemon struct {
 	ipcServer     *ipc.Server
 	gitMonitor    *git.Monitor
 	fileWatcher   *watcher.Watcher
-	taskTracker   *task.TaskTracker
+	taskTrackers  []*task.TaskTracker
+	taskSync      *task.TaskSync
 	clock         *clock.Clock
 	graveyard     *graveyard.Graveyard
 	store         *store.Store
@@ -202,9 +203,9 @@ func (d *Daemon) runForeground() error {
 		log.Printf("File watcher not started: %v", err)
 	}
 
-	// Start task tracker if enabled
-	if err := d.startTaskTracker(ctx); err != nil {
-		log.Printf("Task tracker not started: %v", err)
+	// Start task trackers if enabled (one per watch directory)
+	if err := d.startTaskTrackers(ctx); err != nil {
+		log.Printf("Task trackers not started: %v", err)
 	}
 
 	d.Running = true
@@ -227,7 +228,7 @@ func (d *Daemon) runForeground() error {
 			d.Running = false
 			d.stopClock()
 			d.stopFileWatcher()
-			d.stopTaskTracker()
+			d.stopTaskTrackers()
 			d.stopGitMonitor()
 			d.closeStore()
 			return nil
@@ -236,7 +237,7 @@ func (d *Daemon) runForeground() error {
 			d.Running = false
 			d.stopClock()
 			d.stopFileWatcher()
-			d.stopTaskTracker()
+			d.stopTaskTrackers()
 			d.stopGitMonitor()
 			d.closeStore()
 			return nil
@@ -314,42 +315,74 @@ func (d *Daemon) stopFileWatcher() {
 	}
 }
 
-// startTaskTracker initializes and starts the task tracker if enabled
-func (d *Daemon) startTaskTracker(ctx context.Context) error {
+// startTaskTrackers initializes and starts task trackers for all watch directories
+func (d *Daemon) startTaskTrackers(ctx context.Context) error {
 	if !d.Config.Task.Enabled {
 		log.Printf("Task tracker disabled in config")
 		return nil
 	}
 
-	// Resolve task file path: if relative, join with watch_dir
-	taskFilePath := d.Config.Task.FilePath
-	if !filepath.IsAbs(taskFilePath) {
-		taskFilePath = filepath.Join(d.Config.WatchDir, taskFilePath)
+	// Initialize TaskSync for database synchronization
+	d.taskSync = task.NewTaskSync(d.store)
+
+	// Do initial sync for all directories
+	for _, dir := range d.Config.GetWatchDirs() {
+		if _, err := d.taskSync.SyncDirectory(dir); err != nil {
+			log.Printf("Warning: initial task sync failed for %s: %v", dir, err)
+		}
 	}
 
-	// Create task tracker
-	tt, err := task.NewTracker(taskFilePath, d.Config.Task.PollInterval)
-	if err != nil {
-		return fmt.Errorf("failed to create task tracker: %w", err)
+	// Create a task tracker for each watch directory
+	d.taskTrackers = make([]*task.TaskTracker, 0, len(d.Config.GetWatchDirs()))
+
+	for _, dir := range d.Config.GetWatchDirs() {
+		// Resolve task file path for this directory
+		taskFilePath := d.Config.Task.FilePath
+		if !filepath.IsAbs(taskFilePath) {
+			taskFilePath = filepath.Join(dir, taskFilePath)
+		}
+
+		// Create task tracker
+		tt, err := task.NewTracker(taskFilePath, d.Config.Task.PollInterval)
+		if err != nil {
+			log.Printf("Warning: failed to create task tracker for %s: %v", dir, err)
+			continue
+		}
+
+		// Add daemon as listener (d implements ActivityListener)
+		tt.AddListener(d)
+
+		// Start tracker
+		if err := tt.Start(ctx); err != nil {
+			log.Printf("Warning: failed to start task tracker for %s: %v", dir, err)
+			continue
+		}
+
+		d.taskTrackers = append(d.taskTrackers, tt)
 	}
 
-	// Add daemon as listener (d implements ActivityListener)
-	tt.AddListener(d)
-
-	// Start tracker
-	if err := tt.Start(ctx); err != nil {
-		return fmt.Errorf("failed to start task tracker: %w", err)
-	}
-
-	d.taskTracker = tt
-	log.Printf("Task tracker monitoring: %s (poll every %v)", taskFilePath, d.Config.Task.PollInterval)
+	log.Printf("Task tracker monitoring: %d directories (poll every %v)", len(d.taskTrackers), d.Config.Task.PollInterval)
 	return nil
 }
 
-// stopTaskTracker stops the task tracker if running
-func (d *Daemon) stopTaskTracker() {
-	if d.taskTracker != nil {
-		d.taskTracker.Stop()
+// stopTaskTrackers stops all task trackers
+func (d *Daemon) stopTaskTrackers() {
+	for _, tt := range d.taskTrackers {
+		if tt != nil {
+			tt.Stop()
+		}
+	}
+}
+
+// OnTaskFileChanged is called when a TASKS.md file content changes.
+// It triggers a database sync for the affected directory.
+func (d *Daemon) OnTaskFileChanged(dir string) {
+	if d.taskSync != nil {
+		if count, err := d.taskSync.SyncDirectory(dir); err != nil {
+			log.Printf("Task sync error for %s: %v", dir, err)
+		} else {
+			log.Printf("Synced %d tasks from %s", count, dir)
+		}
 	}
 }
 
