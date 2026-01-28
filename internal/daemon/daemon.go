@@ -247,10 +247,24 @@ func (d *Daemon) runForeground() error {
 	}
 }
 
-// startGitMonitor initializes and starts the git monitor if applicable
+// startGitMonitor initializes and starts the git monitor if applicable.
+// Note: Git monitor is per-repo and can only monitor a single directory.
+// For multi-directory configs, git monitor uses the first directory only.
 func (d *Daemon) startGitMonitor(ctx context.Context) error {
+	watchDirs := d.Config.GetWatchDirs()
+	if len(watchDirs) == 0 {
+		return fmt.Errorf("no watch directories configured")
+	}
+
+	// Use the first watch directory for git monitoring
+	// Git monitor is inherently per-repo, can't span multiple repos
+	watchDir := watchDirs[0]
+	if len(watchDirs) > 1 {
+		log.Printf("Git monitor: using first directory only (%s), multi-directory git monitoring not supported", watchDir)
+	}
+
 	// Find git root from watch directory
-	gitRoot, err := git.FindGitRoot(d.Config.WatchDir)
+	gitRoot, err := git.FindGitRoot(watchDir)
 	if err != nil {
 		return fmt.Errorf("watch directory is not a git repository: %w", err)
 	}
@@ -279,18 +293,31 @@ func (d *Daemon) stopGitMonitor() {
 	}
 }
 
-// startFileWatcher initializes and starts the file watcher if enabled
+// startFileWatcher initializes and starts the file watcher if enabled.
+// Note: File watcher currently supports single directory only.
+// For multi-directory configs, uses the first directory.
 func (d *Daemon) startFileWatcher(ctx context.Context) error {
 	if !d.Config.Watcher.Enabled {
 		log.Printf("File watcher disabled in config")
 		return nil
 	}
 
+	watchDirs := d.Config.GetWatchDirs()
+	if len(watchDirs) == 0 {
+		return fmt.Errorf("no watch directories configured")
+	}
+
+	// Use the first watch directory for file watching
+	watchDir := watchDirs[0]
+	if len(watchDirs) > 1 {
+		log.Printf("File watcher: using first directory only (%s), multi-directory file watching not yet implemented", watchDir)
+	}
+
 	// Create ignore matcher with default + config patterns
 	ignore := watcher.NewIgnoreMatcherWithPatterns(d.Config.Watcher.IgnorePatterns)
 
 	// Create watcher with config values
-	fw, err := watcher.NewWatcher(d.Config.WatchDir, ignore, d.Config.Watcher.DebounceWindow)
+	fw, err := watcher.NewWatcher(watchDir, ignore, d.Config.Watcher.DebounceWindow)
 	if err != nil {
 		return fmt.Errorf("failed to create file watcher: %w", err)
 	}
@@ -351,6 +378,9 @@ func (d *Daemon) startTaskTrackers(ctx context.Context) error {
 
 		// Add daemon as listener (d implements ActivityListener)
 		tt.AddListener(d)
+
+		// Wire file change callback to trigger database sync
+		tt.SetOnFileChanged(d.OnTaskFileChanged)
 
 		// Start tracker
 		if err := tt.Start(ctx); err != nil {
