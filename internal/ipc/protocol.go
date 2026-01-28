@@ -17,6 +17,7 @@ const (
 	RequestTypeStartBreak    = "start_break"    // Start break mode
 	RequestTypeEndBreak      = "end_break"      // End break mode
 	RequestTypeResurrect     = "resurrect"      // Resurrect the pet after death
+	RequestTypeGetTasks      = "get_tasks"      // Get global task list
 )
 
 // Request represents an IPC request message
@@ -77,6 +78,31 @@ type ActivityData struct {
 // GetActivitiesResponse contains recent activities
 type GetActivitiesResponse struct {
 	Activities []ActivityData `json:"activities"`
+}
+
+// GetTasksRequest contains parameters for getting tasks
+type GetTasksRequest struct {
+	Limit            int    `json:"limit"`              // Max tasks to return (default 50)
+	IncludeCompleted bool   `json:"include_completed"`  // Include completed tasks (default false)
+	ProjectPath      string `json:"project_path"`       // Filter by project (optional, empty = all)
+}
+
+// TaskData represents a task for IPC transfer
+type TaskData struct {
+	ID            int64  `json:"id"`
+	ProjectPath   string `json:"project_path"`
+	ProjectName   string `json:"project_name"`
+	Text          string `json:"text"`
+	Completed     bool   `json:"completed"`
+	DueDate       string `json:"due_date,omitempty"`   // ISO 8601 or empty
+	PriorityScore int    `json:"priority_score"`
+	CreatedAt     string `json:"created_at"`           // ISO 8601
+}
+
+// GetTasksResponse contains the task list
+type GetTasksResponse struct {
+	Tasks []TaskData `json:"tasks"`
+	Total int        `json:"total"` // Total count (may be more than returned if limit applied)
 }
 
 // WriteMessage writes a length-prefixed JSON message to the writer
