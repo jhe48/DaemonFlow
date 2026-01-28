@@ -35,6 +35,20 @@ pub struct StateResponse {
     pub longest_streak: i32,      // Best streak ever
     #[serde(default)]
     pub total_deaths: i32,        // Total deaths
+    #[serde(default = "default_level")]
+    pub level: i32,               // Current pet level (1-5+)
+    #[serde(default)]
+    pub experience: i32,          // Current XP
+    #[serde(default = "default_experience_to_next")]
+    pub experience_to_next: i32,  // XP needed for next level
+}
+
+fn default_level() -> i32 {
+    1
+}
+
+fn default_experience_to_next() -> i32 {
+    100
 }
 
 #[derive(Debug, Deserialize)]

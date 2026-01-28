@@ -21,6 +21,10 @@ pub struct App {
     pub current_streak: i32,
     pub longest_streak: i32,
     pub total_deaths: i32,
+    // Pet evolution
+    pub level: i32,
+    pub experience: i32,
+    pub experience_to_next: i32,
     // Task list
     pub tasks: Vec<TaskData>,
     pub task_scroll: usize,
@@ -42,6 +46,9 @@ impl App {
             current_streak: 0,
             longest_streak: 0,
             total_deaths: 0,
+            level: 1,
+            experience: 0,
+            experience_to_next: 100,
             tasks: Vec::new(),
             task_scroll: 0,
         };
@@ -63,6 +70,10 @@ impl App {
                 self.current_streak = state.current_streak;
                 self.longest_streak = state.longest_streak;
                 self.total_deaths = state.total_deaths;
+                // Extract level/experience info
+                self.level = state.level;
+                self.experience = state.experience;
+                self.experience_to_next = state.experience_to_next;
                 self.clock_state = Some(state);
                 self.last_error = None;
                 self.daemon_connected = true;
