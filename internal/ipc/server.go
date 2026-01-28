@@ -22,6 +22,7 @@ type DaemonInterface interface {
 	EndBreak() (previousState, newState string)
 	Resurrect() (*ResurrectResponse, error)
 	GetStreakInfo() (currentStreak, longestStreak, totalDeaths int)
+	GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]TaskData, int, error)
 }
 
 // Server handles IPC connections from clients
@@ -150,6 +151,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleEndBreak()
 	case RequestTypeResurrect:
 		resp, err = s.handleResurrect()
+	case RequestTypeGetTasks:
+		resp, err = s.handleGetTasks(req.Payload)
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -245,4 +248,30 @@ func (s *Server) handleResurrect() (*Response, error) {
 // SocketPath returns the socket path for this server
 func (s *Server) SocketPath() string {
 	return s.socketPath
+}
+
+// handleGetTasks handles get_tasks requests
+func (s *Server) handleGetTasks(payload json.RawMessage) (*Response, error) {
+	var req GetTasksRequest
+	if payload != nil {
+		if err := json.Unmarshal(payload, &req); err != nil {
+			return NewErrorResponse("invalid request payload"), nil
+		}
+	}
+
+	// Apply defaults
+	if req.Limit <= 0 {
+		req.Limit = 50
+	}
+
+	// Get tasks from daemon
+	tasks, total, err := s.daemon.GetGlobalTasks(req.Limit, req.IncludeCompleted, req.ProjectPath)
+	if err != nil {
+		return NewErrorResponse(err.Error()), nil
+	}
+
+	return NewSuccessResponse(&GetTasksResponse{
+		Tasks: tasks,
+		Total: total,
+	})
 }
