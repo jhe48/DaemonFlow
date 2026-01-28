@@ -11,8 +11,11 @@ import (
 
 // Config holds the daemon configuration
 type Config struct {
-	// WatchDir is the directory to monitor for changes
+	// WatchDir is the directory to monitor for changes (single directory, backward compatible)
 	WatchDir string `yaml:"watch_dir"`
+
+	// WatchDirs is a list of directories to monitor for changes (multi-directory support)
+	WatchDirs []string `yaml:"watch_dirs"`
 
 	// LogLevel controls logging verbosity (debug, info, warn, error)
 	LogLevel string `yaml:"log_level"`
@@ -92,6 +95,7 @@ func DefaultConfig() *Config {
 
 	return &Config{
 		WatchDir:   cwd,
+		WatchDirs:  []string{}, // Populated from WatchDir in LoadConfig if empty
 		LogLevel:   "info",
 		SocketPath: filepath.Join(homeDir, ".daemonflow", "daemonflow.sock"),
 		Git: GitConfig{
@@ -126,13 +130,15 @@ func LoadConfig(path string) (*Config, error) {
 	if path == "" {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
-			return config, nil // Return defaults if can't determine home
+			config.normalizeWatchDirs()
+		return config, nil // Return defaults if can't determine home
 		}
 		path = filepath.Join(homeDir, ".daemonflow", "config.yaml")
 	}
 
 	// Check if file exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
+		config.normalizeWatchDirs()
 		return config, nil // File doesn't exist, return defaults
 	}
 
@@ -152,6 +158,9 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 
+	// Handle WatchDirs backward compatibility
+	config.normalizeWatchDirs()
+
 	return config, nil
 }
 
@@ -169,4 +178,35 @@ func (c *Config) Validate() error {
 	}
 
 	return nil
+}
+
+// normalizeWatchDirs ensures WatchDirs is populated with at least one directory.
+// Logic:
+// - If WatchDirs is empty but WatchDir is set, populate WatchDirs with WatchDir
+// - If both are set, WatchDirs takes precedence (WatchDir is ignored)
+// - If neither is set, use cwd as default
+func (c *Config) normalizeWatchDirs() {
+	if len(c.WatchDirs) > 0 {
+		// WatchDirs takes precedence, nothing to do
+		return
+	}
+
+	if c.WatchDir != "" {
+		// Populate WatchDirs from single WatchDir for backward compatibility
+		c.WatchDirs = []string{c.WatchDir}
+		return
+	}
+
+	// Neither set, use cwd as default
+	cwd, _ := os.Getwd()
+	if cwd == "" {
+		cwd = "."
+	}
+	c.WatchDirs = []string{cwd}
+}
+
+// GetWatchDirs returns the list of directories to watch.
+// Guaranteed to be non-empty after LoadConfig.
+func (c *Config) GetWatchDirs() []string {
+	return c.WatchDirs
 }
