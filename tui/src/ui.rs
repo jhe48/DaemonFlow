@@ -1,7 +1,7 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
 use crate::app::App;
-use crate::pet::{Pet, PetState};
+use crate::pet::PetState;
 
 pub fn render(app: &App, frame: &mut Frame) {
     let area = frame.area();
@@ -26,7 +26,7 @@ pub fn render(app: &App, frame: &mut Frame) {
     frame.render_widget(header, chunks[0]);
 
     // Pet display (new, primary visual focus)
-    render_pet(&app.pet, frame, chunks[1]);
+    render_pet(app, frame, chunks[1]);
 
     // Clock status
     render_clock_status(app, frame, chunks[2]);
@@ -171,10 +171,12 @@ fn render_tasks(app: &App, frame: &mut Frame, area: Rect) {
     frame.render_widget(list, area);
 }
 
-/// Render the pet display with state-based coloring.
-fn render_pet(pet: &Pet, frame: &mut Frame, area: Rect) {
-    let art = pet.get_art();
-    let color = match pet.get_state() {
+/// Render the pet display with state-based coloring, level, and XP progress.
+fn render_pet(app: &App, frame: &mut Frame, area: Rect) {
+    use ratatui::text::{Line, Span};
+
+    let art = app.pet.get_art();
+    let color = match app.pet.get_state() {
         PetState::Healthy => Color::Green,
         PetState::Resting => Color::Cyan,
         PetState::Tired => Color::Yellow,
@@ -182,10 +184,45 @@ fn render_pet(pet: &Pet, frame: &mut Frame, area: Rect) {
         PetState::Dead => Color::DarkGray,
     };
 
-    let title = format!("Pet ({})", pet.get_state().display_name());
-    let widget = Paragraph::new(art)
-        .style(Style::default().fg(color))
+    // Title with level and state
+    let title = format!(" Pet Lv.{} ({}) ", app.level, app.pet.get_state().display_name());
+
+    // Calculate XP progress bar (10 chars)
+    let progress_pct = if app.experience_to_next > 0 {
+        (app.experience as f64 / app.experience_to_next as f64 * 100.0).min(100.0)
+    } else {
+        0.0
+    };
+    let filled = ((progress_pct / 10.0).round() as usize).min(10);
+    let empty = 10 - filled;
+    let progress_bar = format!(
+        "{}{}",
+        "█".repeat(filled),
+        "░".repeat(empty)
+    );
+
+    // Build multi-line content: art + XP bar
+    let mut lines: Vec<Line> = art
+        .lines()
+        .map(|line| Line::from(Span::styled(line.to_string(), Style::default().fg(color))))
+        .collect();
+
+    // Add empty line and XP progress line
+    lines.push(Line::from(""));
+    lines.push(Line::from(vec![
+        Span::styled("XP: ", Style::default().fg(Color::Cyan)),
+        Span::styled(
+            format!("{}/{} ", app.experience, app.experience_to_next),
+            Style::default().fg(Color::White),
+        ),
+        Span::styled(
+            format!("[{}]", progress_bar),
+            Style::default().fg(Color::Green),
+        ),
+    ]));
+
+    let widget = Paragraph::new(lines)
         .alignment(Alignment::Center)
-        .block(Block::default().borders(Borders::ALL).title(title));
+        .block(Block::default().borders(Borders::ALL).title(title).title_style(Style::default().fg(Color::Cyan)));
     frame.render_widget(widget, area);
 }
