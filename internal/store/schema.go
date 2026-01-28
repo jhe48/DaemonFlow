@@ -6,7 +6,7 @@ import (
 )
 
 // SchemaVersion is the current database schema version.
-const SchemaVersion = 1
+const SchemaVersion = 2
 
 // Migration represents a database migration.
 type migration struct {
@@ -68,6 +68,31 @@ INSERT INTO schema_version (version) VALUES (1);
 -- Insert default pet state
 INSERT INTO pet_state (id, current_streak, longest_streak, total_deaths, total_resurrections, level, experience, last_activity_date, updated_at)
 VALUES (1, 1, 1, 0, 0, 1, 0, NULL, datetime('now'));
+`,
+	},
+	{
+		version: 2,
+		up: `
+-- Add project_name and priority_score columns to tasks table
+ALTER TABLE tasks ADD COLUMN project_name TEXT;
+ALTER TABLE tasks ADD COLUMN priority_score INTEGER NOT NULL DEFAULT 0;
+
+-- Populate project_name from existing project_path for existing tasks
+-- Extract the last component of the path (e.g., "daemonflow" from "/home/user/daemonflow")
+UPDATE tasks SET project_name = (
+	CASE
+		WHEN project_path LIKE '%/%' THEN
+			SUBSTR(project_path, LENGTH(project_path) - LENGTH(REPLACE(project_path, '/', '')) + 1)
+		ELSE
+			project_path
+	END
+);
+
+-- Create index on priority_score for efficient sorting
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority_score DESC, due_date, created_at);
+
+-- Update schema version
+UPDATE schema_version SET version = 2;
 `,
 	},
 }

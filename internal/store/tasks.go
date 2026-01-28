@@ -2,26 +2,33 @@ package store
 
 import (
 	"database/sql"
+	"path/filepath"
 	"time"
 )
 
 // Task represents a task stored in the database.
 type Task struct {
-	ID          int64
-	ProjectPath string
-	Text        string
-	Completed   bool
-	Frequency   *string    // nil for one-time tasks
-	DueDate     *time.Time // nil if no due date
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID            int64
+	ProjectPath   string
+	ProjectName   string     // Extracted from project_path (e.g., "daemonflow" from "/home/user/daemonflow")
+	Text          string
+	Completed     bool
+	Frequency     *string    // nil for one-time tasks
+	DueDate       *time.Time // nil if no due date
+	PriorityScore int        // Computed score for ordering (higher = more important)
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // InsertTask inserts or updates a task in the database.
 // Uses INSERT OR REPLACE to handle upsert based on UNIQUE(project_path, text) constraint.
+// Automatically extracts project_name from project_path using filepath.Base().
 // Returns the inserted row ID.
 func (s *Store) InsertTask(task *Task) (int64, error) {
 	now := time.Now().UTC().Format(time.RFC3339)
+
+	// Extract project_name from project_path
+	projectName := filepath.Base(task.ProjectPath)
 
 	// Handle nullable fields
 	var frequency sql.NullString
@@ -35,9 +42,9 @@ func (s *Store) InsertTask(task *Task) (int64, error) {
 	}
 
 	result, err := s.db.Exec(`
-		INSERT OR REPLACE INTO tasks (project_path, text, completed, frequency, due_date, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
-	`, task.ProjectPath, task.Text, task.Completed, frequency, dueDate, now, now)
+		INSERT OR REPLACE INTO tasks (project_path, project_name, text, completed, frequency, due_date, priority_score, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, task.ProjectPath, projectName, task.Text, task.Completed, frequency, dueDate, task.PriorityScore, now, now)
 
 	if err != nil {
 		return 0, err
@@ -48,8 +55,12 @@ func (s *Store) InsertTask(task *Task) (int64, error) {
 
 // UpdateTask updates an existing task by ID.
 // Sets updated_at to the current time.
+// Automatically extracts project_name from project_path using filepath.Base().
 func (s *Store) UpdateTask(task *Task) error {
 	now := time.Now().UTC().Format(time.RFC3339)
+
+	// Extract project_name from project_path
+	projectName := filepath.Base(task.ProjectPath)
 
 	// Handle nullable fields
 	var frequency sql.NullString
@@ -65,13 +76,15 @@ func (s *Store) UpdateTask(task *Task) error {
 	_, err := s.db.Exec(`
 		UPDATE tasks SET
 			project_path = ?,
+			project_name = ?,
 			text = ?,
 			completed = ?,
 			frequency = ?,
 			due_date = ?,
+			priority_score = ?,
 			updated_at = ?
 		WHERE id = ?
-	`, task.ProjectPath, task.Text, task.Completed, frequency, dueDate, now, task.ID)
+	`, task.ProjectPath, projectName, task.Text, task.Completed, frequency, dueDate, task.PriorityScore, now, task.ID)
 
 	return err
 }
@@ -80,7 +93,7 @@ func (s *Store) UpdateTask(task *Task) error {
 // Returns tasks ordered by created_at.
 func (s *Store) GetTasksByProject(projectPath string) ([]Task, error) {
 	rows, err := s.db.Query(`
-		SELECT id, project_path, text, completed, frequency, due_date, created_at, updated_at
+		SELECT id, project_path, project_name, text, completed, frequency, due_date, priority_score, created_at, updated_at
 		FROM tasks
 		WHERE project_path = ?
 		ORDER BY created_at
@@ -98,7 +111,7 @@ func (s *Store) GetTasksByProject(projectPath string) ([]Task, error) {
 // Returns tasks ordered by project_path, then created_at.
 func (s *Store) GetAllTasks() ([]Task, error) {
 	rows, err := s.db.Query(`
-		SELECT id, project_path, text, completed, frequency, due_date, created_at, updated_at
+		SELECT id, project_path, project_name, text, completed, frequency, due_date, priority_score, created_at, updated_at
 		FROM tasks
 		ORDER BY project_path, created_at
 	`)
@@ -115,10 +128,29 @@ func (s *Store) GetAllTasks() ([]Task, error) {
 // Returns tasks ordered by due_date (NULLs last), then created_at.
 func (s *Store) GetIncompleteTasks() ([]Task, error) {
 	rows, err := s.db.Query(`
-		SELECT id, project_path, text, completed, frequency, due_date, created_at, updated_at
+		SELECT id, project_path, project_name, text, completed, frequency, due_date, priority_score, created_at, updated_at
 		FROM tasks
 		WHERE completed = 0
 		ORDER BY due_date IS NULL, due_date, created_at
+	`)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanTasks(rows)
+}
+
+// GetTasksSortedByPriority retrieves all incomplete tasks ordered by priority.
+// Order: priority_score DESC, due_date ASC (NULLs last), created_at ASC.
+// Use this for the global task view showing what to work on next.
+func (s *Store) GetTasksSortedByPriority() ([]Task, error) {
+	rows, err := s.db.Query(`
+		SELECT id, project_path, project_name, text, completed, frequency, due_date, priority_score, created_at, updated_at
+		FROM tasks
+		WHERE completed = 0
+		ORDER BY priority_score DESC, due_date IS NULL, due_date ASC, created_at ASC
 	`)
 
 	if err != nil {
@@ -151,6 +183,7 @@ func scanTasks(rows *sql.Rows) ([]Task, error) {
 
 	for rows.Next() {
 		var task Task
+		var projectName sql.NullString
 		var frequency sql.NullString
 		var dueDate sql.NullString
 		var createdAt, updatedAt string
@@ -158,10 +191,12 @@ func scanTasks(rows *sql.Rows) ([]Task, error) {
 		err := rows.Scan(
 			&task.ID,
 			&task.ProjectPath,
+			&projectName,
 			&task.Text,
 			&task.Completed,
 			&frequency,
 			&dueDate,
+			&task.PriorityScore,
 			&createdAt,
 			&updatedAt,
 		)
@@ -170,6 +205,10 @@ func scanTasks(rows *sql.Rows) ([]Task, error) {
 		}
 
 		// Parse nullable fields
+		if projectName.Valid {
+			task.ProjectName = projectName.String
+		}
+
 		if frequency.Valid {
 			task.Frequency = &frequency.String
 		}
