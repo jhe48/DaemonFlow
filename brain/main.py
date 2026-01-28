@@ -12,6 +12,9 @@ Actions:
     parse_recurring   Parse natural language text for recurring patterns
                       Input: {"text": "task text"}
                       Output: {"recurring": true/false, "rrule": "...", ...}
+    unroll_recurring  Expand RRULE to list of concrete dates with instance IDs
+                      Input: {"rrule": "RRULE:...", "task_text": "...", "horizon_days": 7}
+                      Output: {"occurrences": [{"date": "...", "instance_id": "..."}]}
 
 Exit codes:
     0   Success
@@ -24,6 +27,7 @@ import sys
 
 from brain import __version__
 from brain.recurring.parser import parse_recurrence
+from brain.recurring.unroller import unroll_occurrences, task_instance_id
 
 
 def ping_action(data: dict) -> dict:
@@ -75,11 +79,50 @@ def parse_recurring_action(data: dict) -> dict:
         return {"recurring": False}
 
 
+def unroll_recurring_action(data: dict) -> dict:
+    """Unroll recurring action - expand RRULE to concrete dates.
+
+    Takes an RRULE string and returns a list of occurrences within
+    a time horizon. Each occurrence includes a stable instance ID
+    for deduplication purposes.
+
+    Args:
+        data: Dict with:
+            - rrule: RFC 5545 RRULE string to expand
+            - task_text: Original task text (for ID generation)
+            - horizon_days: Optional, days to look ahead (default 7)
+
+    Returns:
+        Dict with:
+            - occurrences: List of dicts, each containing:
+                - date: ISO 8601 date string (YYYY-MM-DD)
+                - instance_id: Stable 16-char hex ID for deduplication
+    """
+    rrule = data.get("rrule", "")
+    task_text = data.get("task_text", "")
+    horizon_days = data.get("horizon_days", 7)
+
+    # Get date strings from unroller
+    dates = unroll_occurrences(rrule, horizon_days=horizon_days)
+
+    # Build occurrences with instance IDs
+    occurrences = []
+    for date in dates:
+        instance_id = task_instance_id(task_text, rrule, date)
+        occurrences.append({
+            "date": date,
+            "instance_id": instance_id,
+        })
+
+    return {"occurrences": occurrences}
+
+
 # Action registry
 ACTIONS = {
     "ping": ping_action,
     "echo": echo_action,
     "parse_recurring": parse_recurring_action,
+    "unroll_recurring": unroll_recurring_action,
 }
 
 
