@@ -75,7 +75,7 @@ Plans:
 
 Plans:
 - [x] 11-01: Recurring patterns module and parse_recurring action (completed 2026-01-27)
-- [ ] 11-02: Recurring task unroller
+- [x] 11-02: Recurring task unroller (completed 2026-01-28)
 
 #### Phase 12: Global Task Sync
 
@@ -113,7 +113,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 9. SQLite Foundation | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
-| 11. Recurring Task Parser | v2.0 | 1/2 | In progress | - |
+| 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 12. Global Task Sync | v2.0 | 0/? | Not started | - |
 | 13. Pet Evolution | v2.0 | 0/? | Not started | - |
 | 14. Conflict Resolution & Polish | v2.0 | 0/? | Not started | - |
