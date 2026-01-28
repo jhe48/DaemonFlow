@@ -21,6 +21,9 @@ type TaskTracker struct {
 	listeners []activity.ActivityListener
 	mu        sync.RWMutex
 
+	// Callback for file content changes (for database sync)
+	onFileChanged func(dir string)
+
 	// Lifecycle control
 	cancel context.CancelFunc
 	wg     sync.WaitGroup
@@ -52,6 +55,14 @@ func (t *TaskTracker) AddListener(listener activity.ActivityListener) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.listeners = append(t.listeners, listener)
+}
+
+// SetOnFileChanged sets the callback to invoke when TASKS.md content changes.
+// The callback receives the directory path containing the changed file.
+func (t *TaskTracker) SetOnFileChanged(callback func(dir string)) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.onFileChanged = callback
 }
 
 // Start begins monitoring the task file for completions
@@ -105,10 +116,17 @@ func (t *TaskTracker) checkForCompletions() {
 	// Parse current file state
 	currentTasks, err := ParseFile(t.filePath)
 	if err != nil {
-		// File doesn't exist or can't be read - clear state
+		// File doesn't exist or can't be read - check if previous state had tasks
+		if len(t.previousTasks) > 0 {
+			// File was removed or became unreadable - this is a change
+			t.notifyFileChanged()
+		}
 		t.previousTasks = []Task{}
 		return
 	}
+
+	// Check if file content has changed
+	hasChanges := t.hasChanges(currentTasks)
 
 	// Build map of previous tasks by (line, text) for comparison
 	// Key: "line:text", Value: Task
@@ -137,6 +155,54 @@ func (t *TaskTracker) checkForCompletions() {
 
 	// Update previous state for next comparison
 	t.previousTasks = currentTasks
+
+	// Notify callback if content changed (for database sync)
+	if hasChanges {
+		t.notifyFileChanged()
+	}
+}
+
+// hasChanges compares current tasks to previous tasks to detect any changes.
+// Returns true if tasks were added, removed, or modified.
+func (t *TaskTracker) hasChanges(currentTasks []Task) bool {
+	// Different count = definitely changed
+	if len(currentTasks) != len(t.previousTasks) {
+		return true
+	}
+
+	// Build map of previous tasks for comparison
+	prevMap := make(map[string]Task)
+	for _, task := range t.previousTasks {
+		key := strconv.Itoa(task.Line) + ":" + task.Text
+		prevMap[key] = task
+	}
+
+	// Check each current task
+	for _, current := range currentTasks {
+		key := strconv.Itoa(current.Line) + ":" + current.Text
+		prev, existed := prevMap[key]
+		if !existed {
+			// New task
+			return true
+		}
+		if prev.Completed != current.Completed {
+			// Completion status changed
+			return true
+		}
+	}
+
+	return false
+}
+
+// notifyFileChanged calls the onFileChanged callback if set.
+func (t *TaskTracker) notifyFileChanged() {
+	t.mu.RLock()
+	callback := t.onFileChanged
+	t.mu.RUnlock()
+
+	if callback != nil {
+		callback(filepath.Dir(t.filePath))
+	}
 }
 
 // emitTaskComplete creates and emits a TaskComplete activity
