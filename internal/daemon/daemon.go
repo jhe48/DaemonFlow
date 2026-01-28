@@ -684,6 +684,21 @@ func (d *Daemon) GetStreakInfo() (currentStreak, longestStreak, totalDeaths int)
 	return info.CurrentStreak, info.LongestStreak, d.graveyard.GetDeathCount()
 }
 
+// GetPetLevelInfo returns the pet's level, experience, and XP needed for next level
+func (d *Daemon) GetPetLevelInfo() (level, experience, experienceToNext int) {
+	if d.store == nil {
+		return 1, 0, 100 // Default: level 1, 0 XP, 100 to next
+	}
+
+	petState, err := d.store.GetPetState()
+	if err != nil {
+		log.Printf("Warning: failed to get pet state: %v", err)
+		return 1, 0, 100
+	}
+
+	return petState.Level, petState.Experience, store.ExperienceToNextLevel(petState.Experience)
+}
+
 // Resurrect attempts to revive the pet after death
 // Returns an error if the pet is not dead
 func (d *Daemon) Resurrect() (*ipc.ResurrectResponse, error) {

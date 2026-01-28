@@ -22,6 +22,7 @@ type DaemonInterface interface {
 	EndBreak() (previousState, newState string)
 	Resurrect() (*ResurrectResponse, error)
 	GetStreakInfo() (currentStreak, longestStreak, totalDeaths int)
+	GetPetLevelInfo() (level, experience, experienceToNext int)
 	GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]TaskData, int, error)
 }
 
@@ -192,13 +193,17 @@ func (s *Server) handleStop() (*Response, error) {
 // handleGetState handles get_state requests for TUI
 func (s *Server) handleGetState() (*Response, error) {
 	currentStreak, longestStreak, totalDeaths := s.daemon.GetStreakInfo()
+	level, experience, experienceToNext := s.daemon.GetPetLevelInfo()
 	state := StateResponse{
-		ClockState:    s.daemon.GetClockState(),
-		EarnedSeconds: s.daemon.GetEarnedSeconds(),
-		SessionEarned: s.daemon.GetSessionEarned(),
-		CurrentStreak: currentStreak,
-		LongestStreak: longestStreak,
-		TotalDeaths:   totalDeaths,
+		ClockState:       s.daemon.GetClockState(),
+		EarnedSeconds:    s.daemon.GetEarnedSeconds(),
+		SessionEarned:    s.daemon.GetSessionEarned(),
+		CurrentStreak:    currentStreak,
+		LongestStreak:    longestStreak,
+		TotalDeaths:      totalDeaths,
+		Level:            level,
+		Experience:       experience,
+		ExperienceToNext: experienceToNext,
 	}
 	return NewSuccessResponse(state)
 }

@@ -42,12 +42,15 @@ type StatusResponse struct {
 
 // StateResponse contains productivity state for TUI
 type StateResponse struct {
-	ClockState    string `json:"clock_state"`     // "working", "break", "overtime"
-	EarnedSeconds int    `json:"earned_seconds"`  // Current balance (can be negative)
-	SessionEarned int    `json:"session_earned"`  // Earned this session
-	CurrentStreak int    `json:"current_streak"`  // Days without death
-	LongestStreak int    `json:"longest_streak"`  // Best streak ever
-	TotalDeaths   int    `json:"total_deaths"`    // Total deaths
+	ClockState       string `json:"clock_state"`        // "working", "break", "overtime"
+	EarnedSeconds    int    `json:"earned_seconds"`     // Current balance (can be negative)
+	SessionEarned    int    `json:"session_earned"`     // Earned this session
+	CurrentStreak    int    `json:"current_streak"`     // Days without death
+	LongestStreak    int    `json:"longest_streak"`     // Best streak ever
+	TotalDeaths      int    `json:"total_deaths"`       // Total deaths
+	Level            int    `json:"level"`              // Current pet level (1-5+)
+	Experience       int    `json:"experience"`         // Current XP
+	ExperienceToNext int    `json:"experience_to_next"` // XP needed for next level
 }
 
 // ClockEventResponse contains the result of a break state transition
