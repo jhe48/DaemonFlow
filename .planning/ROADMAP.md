@@ -89,7 +89,7 @@ Plans:
 - [x] 12-02: Task sync engine (completed 2026-01-28)
 - [x] 12-03: Daemon multi-tracker integration (completed 2026-01-28)
 - [x] 12-04: TUI global view (completed 2026-01-28)
-- [ ] 12-05: Integration testing
+- [x] 12-05: TUI global task list view (completed 2026-01-28)
 
 #### Phase 13: Pet Evolution
 
@@ -118,6 +118,6 @@ Plans:
 | 9. SQLite Foundation | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
-| 12. Global Task Sync | v2.0 | 4/5 | In progress | - |
+| 12. Global Task Sync | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 13. Pet Evolution | v2.0 | 0/? | Not started | - |
 | 14. Conflict Resolution & Polish | v2.0 | 0/? | Not started | - |
