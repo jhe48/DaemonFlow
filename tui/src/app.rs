@@ -74,6 +74,8 @@ impl App {
                 self.level = state.level;
                 self.experience = state.experience;
                 self.experience_to_next = state.experience_to_next;
+                // Sync pet's internal level for ASCII art progression
+                self.pet.set_level(state.level);
                 self.clock_state = Some(state);
                 self.last_error = None;
                 self.daemon_connected = true;
