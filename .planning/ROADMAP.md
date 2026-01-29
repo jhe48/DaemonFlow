@@ -98,21 +98,25 @@ Plans:
 **Research**: Unlikely (internal UI work)
 **Plans**: TBD
 
+**Plans**: 4
+
 Plans:
 - [x] 13-01: Pet state CRUD and XP system (completed 2026-01-28)
 - [x] 13-02: Level/XP IPC extension (completed 2026-01-28)
 - [x] 13-03: Level-based ASCII art progression (completed 2026-01-28)
-- [ ] 13-04: Pet evolution sprites
+- [x] 13-04: TUI level/XP display (completed 2026-01-28)
 
 #### Phase 14: Conflict Resolution & Polish
 
-**Goal**: Duplicate prevention, edge cases, integration testing
+**Goal**: Fix pet level display bug, improve task sync reliability, end-to-end verification
 **Depends on**: Phase 13
-**Research**: Unlikely (internal logic)
-**Plans**: TBD
+**Research**: No (bug fixes based on user-reported issues)
+**Plans**: 3
 
 Plans:
-- [ ] 14-01: TBD
+- [ ] 14-01: Pet level sync fix (fix ASCII art not updating)
+- [ ] 14-02: Task sync logging (diagnose/fix task visibility issues)
+- [ ] 14-03: End-to-end verification (checkpoint)
 
 ## Progress (v2.0)
 
@@ -122,5 +126,5 @@ Plans:
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 12. Global Task Sync | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 13. Pet Evolution | v2.0 | 3/4 | In progress | - |
-| 14. Conflict Resolution & Polish | v2.0 | 0/? | Not started | - |
+| 13. Pet Evolution | v2.0 | 4/4 | Complete | 2026-01-28 |
+| 14. Conflict Resolution & Polish | v2.0 | 0/3 | Planning | - |
