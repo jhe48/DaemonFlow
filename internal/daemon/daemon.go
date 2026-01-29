@@ -415,11 +415,12 @@ func (d *Daemon) stopTaskTrackers() {
 // OnTaskFileChanged is called when a TASKS.md file content changes.
 // It triggers a database sync for the affected directory.
 func (d *Daemon) OnTaskFileChanged(dir string) {
+	log.Printf("TaskFileChanged: TASKS.md changed in %s", dir)
 	if d.taskSync != nil {
 		if count, err := d.taskSync.SyncDirectory(dir); err != nil {
-			log.Printf("Task sync error for %s: %v", dir, err)
+			log.Printf("TaskFileChanged: Sync failed for %s: %v", dir, err)
 		} else {
-			log.Printf("Synced %d tasks from %s", count, dir)
+			log.Printf("TaskFileChanged: Synced %d tasks from %s", count, dir)
 		}
 	}
 }
