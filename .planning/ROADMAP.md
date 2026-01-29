@@ -114,8 +114,8 @@ Plans:
 **Plans**: 3
 
 Plans:
-- [ ] 14-01: Pet level sync fix (fix ASCII art not updating)
-- [ ] 14-02: Task sync logging (diagnose/fix task visibility issues)
+- [x] 14-01: Pet level sync fix (fix ASCII art not updating) (completed 2026-01-28)
+- [x] 14-02: Task sync logging (diagnose/fix task visibility issues) (completed 2026-01-28)
 - [ ] 14-03: End-to-end verification (checkpoint)
 
 ## Progress (v2.0)
@@ -127,4 +127,4 @@ Plans:
 | 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 12. Global Task Sync | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 13. Pet Evolution | v2.0 | 4/4 | Complete | 2026-01-28 |
-| 14. Conflict Resolution & Polish | v2.0 | 0/3 | Planning | - |
+| 14. Conflict Resolution & Polish | v2.0 | 2/3 | In progress | - |
