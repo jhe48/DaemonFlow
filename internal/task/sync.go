@@ -1,6 +1,7 @@
 package task
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -25,20 +26,27 @@ func NewTaskSync(s *store.Store) *TaskSync {
 // Returns number of tasks synced and any error.
 // If TASKS.md doesn't exist, deletes all tasks for that project from DB.
 func (ts *TaskSync) SyncDirectory(dirPath string) (int, error) {
+	log.Printf("TaskSync: Syncing directory %s", dirPath)
+
 	taskFilePath := filepath.Join(dirPath, "TASKS.md")
 
 	// Parse the TASKS.md file
 	tasks, err := ParseFile(taskFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
+			log.Printf("TaskSync: No TASKS.md in %s, removing project tasks", dirPath)
 			// File doesn't exist - remove all tasks for this project
 			return ts.removeAllProjectTasks(dirPath)
 		}
+		log.Printf("TaskSync: Parse error in %s: %v", dirPath, err)
 		return 0, err
 	}
 
+	log.Printf("TaskSync: Found %d tasks in %s", len(tasks), dirPath)
+
 	// Track which task texts we've seen (for stale detection)
 	seenTexts := make(map[string]bool)
+	syncedCount := 0
 
 	// Sync each parsed task
 	for _, task := range tasks {
@@ -53,8 +61,10 @@ func (ts *TaskSync) SyncDirectory(dirPath string) (int, error) {
 
 		_, err := ts.store.InsertTask(storeTask)
 		if err != nil {
+			log.Printf("TaskSync: Failed to insert task '%s': %v", task.Text, err)
 			return 0, err
 		}
+		syncedCount++
 	}
 
 	// Delete stale tasks (in DB but not in file)
@@ -65,9 +75,11 @@ func (ts *TaskSync) SyncDirectory(dirPath string) (int, error) {
 
 	err = ts.store.DeleteTasksByProjectExcept(dirPath, keepTexts)
 	if err != nil {
+		log.Printf("TaskSync: Failed to delete stale tasks in %s: %v", dirPath, err)
 		return 0, err
 	}
 
+	log.Printf("TaskSync: Successfully synced %d tasks from %s", syncedCount, dirPath)
 	return len(tasks), nil
 }
 
