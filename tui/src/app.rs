@@ -210,6 +210,31 @@ impl App {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_pet_level_matches_app_level() {
+        // After update_state(), pet.level should match app.level
+        // Note: Can't fully test without mock IPC, but verify Pet API works
+        let mut pet = crate::pet::Pet::new();
+        pet.set_level(3);
+        assert_eq!(pet.get_level(), 3);
+
+        // Verify level affects art selection
+        let art_l1 = {
+            let mut p = crate::pet::Pet::new();
+            p.set_level(1);
+            p.get_art()
+        };
+        let art_l3 = {
+            let mut p = crate::pet::Pet::new();
+            p.set_level(3);
+            p.get_art()
+        };
+        assert_ne!(art_l1, art_l3, "Different levels should have different art");
+    }
+}
+
 impl Default for App {
     fn default() -> Self {
         Self::new()
