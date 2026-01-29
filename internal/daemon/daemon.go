@@ -359,8 +359,11 @@ func (d *Daemon) startTaskTrackers(ctx context.Context) error {
 
 	// Do initial sync for all directories
 	for _, dir := range d.Config.GetWatchDirs() {
-		if _, err := d.taskSync.SyncDirectory(dir); err != nil {
+		count, err := d.taskSync.SyncDirectory(dir)
+		if err != nil {
 			log.Printf("Warning: initial task sync failed for %s: %v", dir, err)
+		} else {
+			log.Printf("Initial task sync: %d tasks from %s", count, dir)
 		}
 	}
 
