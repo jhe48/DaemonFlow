@@ -2,58 +2,47 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-21)
+See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** The daemon must work flawlessly in the background without intervention.
-**Current focus:** v2.0 Smart Harness — Python "Brain" layer, global SQLite sync, pet evolution
+**Current focus:** v2.0 complete — planning next milestone
 
 ## Current Position
 
-Phase: 14 of 14 (Conflict Resolution & Polish)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-28 — Completed 14-02-PLAN.md
+Phase: 14 of 14 (all phases complete)
+Plan: All plans complete
+Status: Milestone v2.0 shipped
+Last activity: 2026-01-28 — v2.0 milestone complete
 
-Progress: █████████░ 97%
+Progress: ██████████ 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18 (v1.0)
-- Average duration: 5 min
-- Total execution time: 1 hour 23 min
+- Total plans completed: 36 (v1.0 + v2.0)
+- v1.0: 18 plans in 5 days
+- v2.0: 18 plans in 7 days
 
-**By Phase (v1.0):**
+**By Milestone:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. Foundation | 2/2 ✓ | 16 min | 8 min |
-| 2. Git Monitoring | 2/2 ✓ | 12 min | 6 min |
-| 3. File Watcher | 2/2 ✓ | 8 min | 4 min |
-| 4. Task Tracking | 2/2 ✓ | 4 min | 2 min |
-| 5. Freedom Clock | 3/3 ✓ | 5 min | 1.7 min |
-| 6. TUI Foundation | 3/3 ✓ | 9 min | 3 min |
-| 7. Pet System | 3/3 ✓ | 20 min | 6.7 min |
-| 8. Graveyard | 3/3 ✓ | 8 min | 2.7 min |
+| Milestone | Phases | Plans | Duration |
+|-----------|--------|-------|----------|
+| v1.0 MVP | 1-8 | 18 | 5 days |
+| v2.0 Smart Harness | 9-14 | 18 | 7 days |
 
 ## Accumulated Context
 
 ### Decisions
 
 All decisions logged in PROJECT.md Key Decisions table.
-Major architectural decisions validated in v1.0:
+Major architectural decisions validated across both milestones:
 - Go daemon + Rust TUI separation
 - Git CLI over go-git library
 - Length-prefixed JSON IPC
 - Cat-based ASCII pet design
-
-### v2.0 Architecture Constraints
-
-- **Decoupled architecture**: Go acts as orchestrator, triggers Python via os/exec only on specific file save events
-- **Minimal Python dependencies**: Keep Python layer simple, subprocess-based
-- **JSON data passing**: CLI arguments or temp files for Go→Python communication
-- **Easy to debug**: Trinity (Go/Python/Rust) stays decoupled for independent debugging
-- **Virtual environment**: Python 3.12+ requires venv; Go executor uses `./venv/bin/python`
+- Pure Go SQLite (modernc.org/sqlite)
+- Python via subprocess for Brain
+- 5-level pet progression
 
 ### Deferred Issues
 
@@ -65,10 +54,11 @@ None.
 
 ### Roadmap Evolution
 
-- Milestone v2.0 created: Smart Harness (Python Brain, SQLite, Pet Evolution), 6 phases (Phase 9-14)
+- v1.0 MVP shipped: 2026-01-21
+- v2.0 Smart Harness shipped: 2026-01-28
 
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 14-02-PLAN.md
+Stopped at: v2.0 milestone complete
 Resume file: None

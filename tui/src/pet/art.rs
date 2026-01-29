@@ -21,7 +21,7 @@
 /// Level 1 healthy: Tiny kitten, eyes open, happy.
 pub const LEVEL_1_HEALTHY: &str = r#"
   /\_/\
- ( o.o )
+  ( o.o )
   > ^ <
 "#;
 
@@ -29,20 +29,20 @@ pub const LEVEL_1_HEALTHY: &str = r#"
 pub const LEVEL_1_RESTING: &str = r#"
    zzz
   /\_/\
- ( -.- )
+  ( -.- )
 "#;
 
 /// Level 1 tired: Tiny kitten worried.
 pub const LEVEL_1_TIRED: &str = r#"
    !
   /\_/\
- ( o_o )
+  ( o_o )
 "#;
 
 /// Level 1 decaying: Tiny kitten suffering.
 pub const LEVEL_1_DECAYING: &str = r#"
   /\_/\
- ( x_x )
+  ( x_x )
   > ~ <
 "#;
 

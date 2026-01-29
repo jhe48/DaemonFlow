@@ -7,7 +7,7 @@ Build a two-process productivity system: a Go daemon ("Heart") that invisibly mo
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-8 (shipped 2026-01-21) — [Archive](milestones/v1.0-ROADMAP.md)
-- 🚧 **v2.0 Smart Harness** — Phases 9-14 (in progress)
+- ✅ **v2.0 Smart Harness** — Phases 9-14 (shipped 2026-01-28) — [Archive](milestones/v2.0-ROADMAP.md)
 
 ## Completed Milestones
 
@@ -27,6 +27,20 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 </details>
 
+<details>
+<summary>✅ v2.0 Smart Harness (Phases 9-14) — SHIPPED 2026-01-28</summary>
+
+- [x] Phase 9: SQLite Foundation (2/2 plans) — completed 2026-01-22
+- [x] Phase 10: Python Brain Setup (2/2 plans) — completed 2026-01-22
+- [x] Phase 11: Recurring Task Parser (2/2 plans) — completed 2026-01-28
+- [x] Phase 12: Global Task Sync (5/5 plans) — completed 2026-01-28
+- [x] Phase 13: Pet Evolution (4/4 plans) — completed 2026-01-28
+- [x] Phase 14: Conflict Resolution & Polish (3/3 plans) — completed 2026-01-28
+
+Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -39,92 +53,9 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 | 6. TUI Foundation | v1.0 | 3/3 | Complete | 2026-01-20 |
 | 7. Pet System | v1.0 | 3/3 | Complete | 2026-01-21 |
 | 8. Graveyard | v1.0 | 3/3 | Complete | 2026-01-21 |
-
-### 🚧 v2.0 Smart Harness (In Progress)
-
-**Milestone Goal:** Add Python "Brain" layer for intelligent task handling, global SQLite sync, and streak-based pet evolution
-
-#### Phase 9: SQLite Foundation
-
-**Goal**: Schema design, Go integration, basic CRUD operations
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (established patterns)
-**Plans**: 2
-
-Plans:
-- [x] 09-01: SQLite integration and schema (completed 2026-01-22)
-- [x] 09-02: CRUD operations (completed 2026-01-22)
-
-#### Phase 10: Python Brain Setup
-
-**Goal**: Cross-language bridge, os/exec integration, JSON data passing
-**Depends on**: Phase 9
-**Research**: Unlikely (standard subprocess patterns)
-**Plans**: 2
-
-Plans:
-- [x] 10-01: Python brain package and Go executor (completed 2026-01-22)
-- [x] 10-02: Brain executor daemon integration (completed 2026-01-22)
-
-#### Phase 11: Recurring Task Parser
-
-**Goal**: Natural language recurring pattern detection and RRULE generation
-**Depends on**: Phase 10
-**Research**: Complete (recurrent library, RFC 5545 RRULEs)
-**Plans**: 2
-
-Plans:
-- [x] 11-01: Recurring patterns module and parse_recurring action (completed 2026-01-27)
-- [x] 11-02: Recurring task unroller (completed 2026-01-28)
-
-#### Phase 12: Global Task Sync
-
-**Goal**: Multi-directory monitoring, upsert logic, global view in TUI
-**Depends on**: Phase 11
-**Research**: Unlikely (extends existing patterns)
-**Plans**: 5
-
-Plans:
-- [x] 12-01: Config & schema foundation (completed 2026-01-28)
-- [x] 12-02: Task sync engine (completed 2026-01-28)
-- [x] 12-03: Daemon multi-tracker integration (completed 2026-01-28)
-- [x] 12-04: TUI global view (completed 2026-01-28)
-- [x] 12-05: TUI global task list view (completed 2026-01-28)
-
-#### Phase 13: Pet Evolution
-
-**Goal**: Streak calculation, level system, ASCII art progression in Rust TUI
-**Depends on**: Phase 12
-**Research**: Unlikely (internal UI work)
-**Plans**: TBD
-
-**Plans**: 4
-
-Plans:
-- [x] 13-01: Pet state CRUD and XP system (completed 2026-01-28)
-- [x] 13-02: Level/XP IPC extension (completed 2026-01-28)
-- [x] 13-03: Level-based ASCII art progression (completed 2026-01-28)
-- [x] 13-04: TUI level/XP display (completed 2026-01-28)
-
-#### Phase 14: Conflict Resolution & Polish
-
-**Goal**: Fix pet level display bug, improve task sync reliability, end-to-end verification
-**Depends on**: Phase 13
-**Research**: No (bug fixes based on user-reported issues)
-**Plans**: 3
-
-Plans:
-- [x] 14-01: Pet level sync fix (fix ASCII art not updating) (completed 2026-01-28)
-- [x] 14-02: Task sync logging (diagnose/fix task visibility issues) (completed 2026-01-28)
-- [ ] 14-03: End-to-end verification (checkpoint)
-
-## Progress (v2.0)
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
 | 9. SQLite Foundation | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 10. Python Brain Setup | v2.0 | 2/2 | Complete | 2026-01-22 |
 | 11. Recurring Task Parser | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 12. Global Task Sync | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 13. Pet Evolution | v2.0 | 4/4 | Complete | 2026-01-28 |
-| 14. Conflict Resolution & Polish | v2.0 | 2/3 | In progress | - |
+| 14. Conflict Resolution & Polish | v2.0 | 3/3 | Complete | 2026-01-28 |
