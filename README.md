@@ -21,6 +21,15 @@ You earn guilt-free break time through productive work. If you slack off, the cl
   Status: HEALTHY
   Earned: 15:30
   Streak: 3 days
+
+   HEALTHY:        RESTING:        TIRED:          DECAYING:       DEAD:
+                      zzz            !             
+     /\_/\          /\_/\          /\_/\          ' /\_/\ '        _____
+    ( o.o )        ( -.- )        ( o_o )          ( x_x )        |     |
+     > ^ <          > ~ <          > ~ <            > ~ <         | RIP |
+    /|   |\        /|   |\        /|   |\          /|   |\        |     |
+   (_|   |_)      (_|   |_)      (_|   |_)        (_|___|_)       |_____|
+
 ```
 
 ## How It Works
@@ -160,7 +169,7 @@ cat ~/.daemonflow/GRAVEYARD.md
 
 When your pet dies, press `x` in the TUI to resurrect. Your pet revives and you must immediately start working to earn break time again.
 
-Deaths are permanent records - they stay in the Graveyard forever. Your streak resets to 0 on death.
+Deaths are permanent records, and they stay in the Graveyard forever. Your streak resets to 0 on death.
 
 ## Data Files
 
