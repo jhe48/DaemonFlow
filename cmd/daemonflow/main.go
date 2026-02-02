@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/jackyhe0402/daemonflow/internal/daemon"
@@ -182,12 +184,78 @@ func main() {
 	}
 	activitiesCmd.Flags().IntVarP(&activitiesLimit, "limit", "n", 10, "Maximum number of activities to show")
 
-	rootCmd.AddCommand(startCmd, stopCmd, statusCmd, activitiesCmd)
+	// Add command
+	var addCmd = &cobra.Command{
+		Use:   "add [task text]",
+		Short: "Add a task",
+		Long:  `Add a task to TASKS.md in the current directory. The daemon will automatically sync it.`,
+		Args:  cobra.MinimumNArgs(1),
+		RunE:  runAdd,
+	}
+
+	rootCmd.AddCommand(startCmd, stopCmd, statusCmd, activitiesCmd, addCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+// runAdd handles the add command
+func runAdd(cmd *cobra.Command, args []string) error {
+	// Join args to get full task text
+	text := strings.Join(args, " ")
+
+	// Get current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error: failed to get current directory")
+		os.Exit(1)
+	}
+
+	// Construct TASKS.md path
+	tasksPath := filepath.Join(cwd, "TASKS.md")
+
+	// Read existing file or create with header
+	var content []byte
+	if _, err := os.Stat(tasksPath); os.IsNotExist(err) {
+		content = []byte("# Tasks\n\n")
+	} else {
+		content, err = os.ReadFile(tasksPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: failed to read %s: %v\n", tasksPath, err)
+			os.Exit(1)
+		}
+	}
+
+	// Append task
+	taskLine := fmt.Sprintf("- [ ] %s\n", text)
+	content = append(content, []byte(taskLine)...)
+
+	// Write file
+	if err := os.WriteFile(tasksPath, content, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to write %s: %v\n", tasksPath, err)
+		os.Exit(1)
+	}
+
+	// Try to get task count from daemon (graceful if not running)
+	d := daemon.New()
+	socketPath := d.GetSocketPath()
+
+	var countStr string
+	if _, err := os.Stat(socketPath); err == nil {
+		client := ipc.NewClient(socketPath)
+		count, err := client.GetTaskCount()
+		if err == nil {
+			countStr = fmt.Sprintf(" (%d tasks)", count)
+		}
+	}
+
+	// Print colored confirmation
+	// Green checkmark: \033[32m✓\033[0m
+	fmt.Printf("\033[32m✓\033[0m Added: %s%s\n", text, countStr)
+
+	return nil
 }
 
 // formatDuration formats a duration in a human-readable way
