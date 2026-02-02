@@ -61,10 +61,10 @@ Plans:
 **Goal**: Press `a` to add task inline with natural language parsing
 **Depends on**: Phase 15
 **Research**: Unlikely (ratatui patterns established)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 16-01: TBD
+- [x] 16-01: TUI inline task input (completed 2026-02-02)
 
 #### Phase 17: Analytics Foundation
 
@@ -126,7 +126,7 @@ Plans:
 | 13. Pet Evolution | v2.0 | 4/4 | Complete | 2026-01-28 |
 | 14. Conflict Resolution & Polish | v2.0 | 3/3 | Complete | 2026-01-28 |
 | 15. Quick-Add CLI | v3.0 | 1/1 | Complete | 2026-02-02 |
-| 16. TUI Task Input | v3.0 | 0/? | Not started | - |
+| 16. TUI Task Input | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 17. Analytics Foundation | v3.0 | 0/? | Not started | - |
 | 18. Streaks & Summaries | v3.0 | 0/? | Not started | - |
 | 19. TUI Dashboard | v3.0 | 0/? | Not started | - |
