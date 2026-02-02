@@ -51,10 +51,10 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 **Goal**: Add tasks from terminal without opening TUI (`dflow add "fix the bug"`)
 **Depends on**: Previous milestone complete
 **Research**: Unlikely (established Go CLI patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 15-01: TBD (run /gsd:plan-phase 15 to break down)
+- [x] 15-01: Add `add` subcommand to CLI (completed 2026-02-02)
 
 #### Phase 16: TUI Task Input
 
@@ -125,7 +125,7 @@ Plans:
 | 12. Global Task Sync | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 13. Pet Evolution | v2.0 | 4/4 | Complete | 2026-01-28 |
 | 14. Conflict Resolution & Polish | v2.0 | 3/3 | Complete | 2026-01-28 |
-| 15. Quick-Add CLI | v3.0 | 0/? | Not started | - |
+| 15. Quick-Add CLI | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 16. TUI Task Input | v3.0 | 0/? | Not started | - |
 | 17. Analytics Foundation | v3.0 | 0/? | Not started | - |
 | 18. Streaks & Summaries | v3.0 | 0/? | Not started | - |
