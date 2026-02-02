@@ -1,21 +1,37 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
-use crate::app::App;
+use crate::app::{App, InputMode};
 use crate::pet::PetState;
 
 pub fn render(app: &App, frame: &mut Frame) {
     let area = frame.area();
 
+    // Determine layout based on input mode
+    let in_input_mode = app.input_mode == InputMode::AddingTask;
+
     // Main layout: vertical split
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
+    let constraints = if in_input_mode {
+        vec![
+            Constraint::Length(3),   // Header
+            Constraint::Min(10),     // Pet display (primary focus)
+            Constraint::Length(5),   // Clock status
+            Constraint::Length(6),   // Task list (reduced when input shown)
+            Constraint::Length(3),   // Input box
+            Constraint::Length(1),   // Controls help
+        ]
+    } else {
+        vec![
             Constraint::Length(3),   // Header
             Constraint::Min(10),     // Pet display (primary focus)
             Constraint::Length(5),   // Clock status
             Constraint::Length(8),   // Task list
             Constraint::Length(3),   // Controls help
-        ])
+        ]
+    };
+
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
         .split(area);
 
     // Header
@@ -34,16 +50,28 @@ pub fn render(app: &App, frame: &mut Frame) {
     // Task list
     render_tasks(app, frame, chunks[3]);
 
-    // Controls
-    let controls = if app.daemon_connected {
-        "q: quit | b: toggle break | r: refresh | j/k: scroll tasks"
+    // Input box (only in AddingTask mode)
+    if in_input_mode {
+        render_input_box(app, frame, chunks[4]);
+
+        // Controls for input mode
+        let controls = "Enter: submit | Esc: cancel";
+        let controls_widget = Paragraph::new(controls)
+            .style(Style::default().fg(Color::Yellow))
+            .alignment(Alignment::Center);
+        frame.render_widget(controls_widget, chunks[5]);
     } else {
-        "q: quit | Daemon not running - start with: daemonflow start"
-    };
-    let controls_widget = Paragraph::new(controls)
-        .style(Style::default().fg(Color::DarkGray))
-        .alignment(Alignment::Center);
-    frame.render_widget(controls_widget, chunks[3 + 1]);
+        // Normal mode controls
+        let controls = if app.daemon_connected {
+            "q: quit | a: add task | b: toggle break | r: refresh | j/k: scroll tasks"
+        } else {
+            "q: quit | Daemon not running - start with: daemonflow start"
+        };
+        let controls_widget = Paragraph::new(controls)
+            .style(Style::default().fg(Color::DarkGray))
+            .alignment(Alignment::Center);
+        frame.render_widget(controls_widget, chunks[4]);
+    }
 }
 
 fn render_clock_status(app: &App, frame: &mut Frame, area: Rect) {
@@ -225,4 +253,21 @@ fn render_pet(app: &App, frame: &mut Frame, area: Rect) {
         .alignment(Alignment::Center)
         .block(Block::default().borders(Borders::ALL).title(title).title_style(Style::default().fg(Color::Cyan)));
     frame.render_widget(widget, area);
+}
+
+/// Render the task input box.
+fn render_input_box(app: &App, frame: &mut Frame, area: Rect) {
+    // Display input buffer with cursor indicator
+    let input_text = format!("{}|", app.input_buffer);
+
+    let block = Block::default()
+        .title(" Add Task ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::Yellow));
+
+    let input_widget = Paragraph::new(input_text)
+        .style(Style::default().fg(Color::White))
+        .block(block);
+
+    frame.render_widget(input_widget, area);
 }

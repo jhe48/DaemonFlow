@@ -9,6 +9,13 @@ use crate::pet::Pet;
 
 const UPDATE_INTERVAL: Duration = Duration::from_millis(500);
 
+/// Input mode for the TUI
+#[derive(PartialEq, Clone, Copy)]
+pub enum InputMode {
+    Normal,
+    AddingTask,
+}
+
 pub struct App {
     pub ipc_client: IpcClient,
     pub daemon_connected: bool,
@@ -28,6 +35,9 @@ pub struct App {
     // Task list
     pub tasks: Vec<TaskData>,
     pub task_scroll: usize,
+    // Input mode for task entry
+    pub input_mode: InputMode,
+    pub input_buffer: String,
 }
 
 impl App {
@@ -51,6 +61,8 @@ impl App {
             experience_to_next: 100,
             tasks: Vec::new(),
             task_scroll: 0,
+            input_mode: InputMode::Normal,
+            input_buffer: String::new(),
         };
 
         // If connected, get initial state
@@ -134,6 +146,20 @@ impl App {
         }
     }
 
+    /// Submit the task in the input buffer via IPC
+    fn submit_task(&mut self) {
+        if self.input_buffer.is_empty() {
+            return;
+        }
+
+        let text = self.input_buffer.clone();
+        self.input_buffer.clear();
+
+        // Will be implemented in Task 3 - for now just clear buffer
+        // TODO: Call IPC to add task
+        let _ = text; // Suppress unused variable warning
+    }
+
     pub fn run(&mut self, terminal: &mut Terminal<impl Backend>) -> Result<()> {
         while !self.should_quit {
             // Check if we need to update state
@@ -148,55 +174,91 @@ impl App {
             if event::poll(Duration::from_millis(100))? {
                 if let Event::Key(key) = event::read()? {
                     if key.kind == KeyEventKind::Press {
-                        match key.code {
-                            KeyCode::Char('q') | KeyCode::Esc => {
-                                self.should_quit = true;
-                            }
-                            KeyCode::Char('b') => {
-                                if self.daemon_connected {
-                                    self.toggle_break();
-                                }
-                            }
-                            KeyCode::Char('r') => {
-                                // Force refresh - also try to reconnect if disconnected
-                                if !self.daemon_connected {
-                                    self.daemon_connected = self.ipc_client.is_daemon_running();
-                                }
-                                if self.daemon_connected {
-                                    self.update_state();
-                                }
-                            }
-                            KeyCode::Char('x') => {
-                                // Resurrect dead pet
-                                if self.daemon_connected && self.pet.get_state().is_dead() {
-                                    match self.ipc_client.resurrect() {
-                                        Ok(res) => {
-                                            if res.success {
-                                                self.last_error = Some("Pet resurrected! All earned time forfeited.".to_string());
-                                                self.update_state();
-                                            } else {
-                                                self.last_error = Some(res.message);
-                                            }
-                                        }
-                                        Err(e) => {
-                                            self.last_error = Some(e.to_string());
+                        match self.input_mode {
+                            InputMode::Normal => {
+                                match key.code {
+                                    KeyCode::Char('q') | KeyCode::Esc => {
+                                        self.should_quit = true;
+                                    }
+                                    KeyCode::Char('a') => {
+                                        // Enter task adding mode
+                                        self.input_mode = InputMode::AddingTask;
+                                        self.input_buffer.clear();
+                                    }
+                                    KeyCode::Char('b') => {
+                                        if self.daemon_connected {
+                                            self.toggle_break();
                                         }
                                     }
+                                    KeyCode::Char('r') => {
+                                        // Force refresh - also try to reconnect if disconnected
+                                        if !self.daemon_connected {
+                                            self.daemon_connected = self.ipc_client.is_daemon_running();
+                                        }
+                                        if self.daemon_connected {
+                                            self.update_state();
+                                        }
+                                    }
+                                    KeyCode::Char('x') => {
+                                        // Resurrect dead pet
+                                        if self.daemon_connected && self.pet.get_state().is_dead() {
+                                            match self.ipc_client.resurrect() {
+                                                Ok(res) => {
+                                                    if res.success {
+                                                        self.last_error = Some("Pet resurrected! All earned time forfeited.".to_string());
+                                                        self.update_state();
+                                                    } else {
+                                                        self.last_error = Some(res.message);
+                                                    }
+                                                }
+                                                Err(e) => {
+                                                    self.last_error = Some(e.to_string());
+                                                }
+                                            }
+                                        }
+                                    }
+                                    KeyCode::Char('j') | KeyCode::Down => {
+                                        // Scroll tasks down
+                                        if !self.tasks.is_empty() && self.task_scroll < self.tasks.len().saturating_sub(1) {
+                                            self.task_scroll += 1;
+                                        }
+                                    }
+                                    KeyCode::Char('k') | KeyCode::Up => {
+                                        // Scroll tasks up
+                                        if self.task_scroll > 0 {
+                                            self.task_scroll = self.task_scroll.saturating_sub(1);
+                                        }
+                                    }
+                                    _ => {}
                                 }
                             }
-                            KeyCode::Char('j') | KeyCode::Down => {
-                                // Scroll tasks down
-                                if !self.tasks.is_empty() && self.task_scroll < self.tasks.len().saturating_sub(1) {
-                                    self.task_scroll += 1;
+                            InputMode::AddingTask => {
+                                match key.code {
+                                    KeyCode::Esc => {
+                                        // Cancel adding task
+                                        self.input_mode = InputMode::Normal;
+                                        self.input_buffer.clear();
+                                    }
+                                    KeyCode::Enter => {
+                                        // Submit task if buffer is not empty
+                                        if !self.input_buffer.is_empty() {
+                                            self.submit_task();
+                                        }
+                                        self.input_mode = InputMode::Normal;
+                                    }
+                                    KeyCode::Backspace => {
+                                        // Remove last character
+                                        self.input_buffer.pop();
+                                    }
+                                    KeyCode::Char(c) => {
+                                        // Add character to buffer (printable only)
+                                        if !c.is_control() {
+                                            self.input_buffer.push(c);
+                                        }
+                                    }
+                                    _ => {}
                                 }
                             }
-                            KeyCode::Char('k') | KeyCode::Up => {
-                                // Scroll tasks up
-                                if self.task_scroll > 0 {
-                                    self.task_scroll = self.task_scroll.saturating_sub(1);
-                                }
-                            }
-                            _ => {}
                         }
                     }
                 }
