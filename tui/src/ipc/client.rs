@@ -124,6 +124,25 @@ impl IpcClient {
         let tasks: GetTasksResponse = serde_json::from_value(data)?;
         Ok(tasks)
     }
+
+    pub fn add_task(&self, project_path: &str, text: &str) -> Result<AddTaskResponse> {
+        let request = Request {
+            request_type: REQUEST_TYPE_ADD_TASK.to_string(),
+            payload: Some(serde_json::to_value(AddTaskRequest {
+                project_path: project_path.to_string(),
+                text: text.to_string(),
+            })?),
+        };
+
+        let response = self.send_request(&request)?;
+
+        if !response.success {
+            bail!("add_task failed: {}", response.error.unwrap_or_default());
+        }
+
+        let data = response.data.context("No data in response")?;
+        Ok(serde_json::from_value(data)?)
+    }
 }
 
 impl Default for IpcClient {

@@ -155,9 +155,21 @@ impl App {
         let text = self.input_buffer.clone();
         self.input_buffer.clear();
 
-        // Will be implemented in Task 3 - for now just clear buffer
-        // TODO: Call IPC to add task
-        let _ = text; // Suppress unused variable warning
+        // Use empty project_path to use daemon's watch directory
+        match self.ipc_client.add_task("", &text) {
+            Ok(resp) => {
+                if resp.success {
+                    // Trigger immediate task refresh to show new task
+                    self.update_tasks();
+                    self.last_error = None;
+                } else {
+                    self.last_error = Some(format!("Failed to add task: {}", resp.message));
+                }
+            }
+            Err(e) => {
+                self.last_error = Some(format!("IPC error: {}", e));
+            }
+        }
     }
 
     pub fn run(&mut self, terminal: &mut Terminal<impl Backend>) -> Result<()> {

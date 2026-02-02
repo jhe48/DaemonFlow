@@ -65,6 +65,7 @@ pub struct ResurrectResponse {
 
 // Task sync types
 pub const REQUEST_TYPE_GET_TASKS: &str = "get_tasks";
+pub const REQUEST_TYPE_ADD_TASK: &str = "add_task";
 
 #[derive(Debug, Deserialize)]
 pub struct TaskData {
@@ -83,4 +84,16 @@ pub struct TaskData {
 pub struct GetTasksResponse {
     pub tasks: Vec<TaskData>,
     pub total: i32,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AddTaskRequest {
+    pub project_path: String,
+    pub text: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AddTaskResponse {
+    pub success: bool,
+    pub message: String,
 }
