@@ -24,6 +24,7 @@ type DaemonInterface interface {
 	GetStreakInfo() (currentStreak, longestStreak, totalDeaths int)
 	GetPetLevelInfo() (level, experience, experienceToNext int)
 	GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]TaskData, int, error)
+	GetPendingTaskCount() int
 }
 
 // Server handles IPC connections from clients
@@ -154,6 +155,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleResurrect()
 	case RequestTypeGetTasks:
 		resp, err = s.handleGetTasks(req.Payload)
+	case RequestTypeGetTaskCount:
+		resp, err = s.handleGetTaskCount()
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -279,4 +282,10 @@ func (s *Server) handleGetTasks(payload json.RawMessage) (*Response, error) {
 		Tasks: tasks,
 		Total: total,
 	})
+}
+
+// handleGetTaskCount handles get_task_count requests
+func (s *Server) handleGetTaskCount() (*Response, error) {
+	count := s.daemon.GetPendingTaskCount()
+	return NewSuccessResponse(&GetTaskCountResponse{Count: count})
 }

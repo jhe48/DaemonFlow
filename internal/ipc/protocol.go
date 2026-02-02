@@ -18,6 +18,7 @@ const (
 	RequestTypeEndBreak      = "end_break"      // End break mode
 	RequestTypeResurrect     = "resurrect"      // Resurrect the pet after death
 	RequestTypeGetTasks      = "get_tasks"      // Get global task list
+	RequestTypeGetTaskCount  = "get_task_count" // Get pending task count
 )
 
 // Request represents an IPC request message
@@ -106,6 +107,11 @@ type TaskData struct {
 type GetTasksResponse struct {
 	Tasks []TaskData `json:"tasks"`
 	Total int        `json:"total"` // Total count (may be more than returned if limit applied)
+}
+
+// GetTaskCountResponse contains the pending task count
+type GetTaskCountResponse struct {
+	Count int `json:"count"` // Number of incomplete tasks
 }
 
 // WriteMessage writes a length-prefixed JSON message to the writer

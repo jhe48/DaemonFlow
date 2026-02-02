@@ -512,6 +512,20 @@ func (d *Daemon) GetBrainExecutor() *brain.Executor {
 	return d.brainExecutor
 }
 
+// GetPendingTaskCount returns the count of incomplete tasks across all projects
+func (d *Daemon) GetPendingTaskCount() int {
+	if d.store == nil {
+		return 0
+	}
+
+	count, err := d.store.CountIncompleteTasks()
+	if err != nil {
+		log.Printf("Warning: failed to count incomplete tasks: %v", err)
+		return 0
+	}
+	return count
+}
+
 // GetGlobalTasks returns tasks from all projects, sorted by priority
 func (d *Daemon) GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]ipc.TaskData, int, error) {
 	if d.store == nil {

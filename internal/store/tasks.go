@@ -238,6 +238,13 @@ func (s *Store) UpdatePriorityScore(id int64, score int) error {
 	return err
 }
 
+// CountIncompleteTasks returns the count of incomplete tasks.
+func (s *Store) CountIncompleteTasks() (int, error) {
+	var count int
+	err := s.db.QueryRow(`SELECT COUNT(*) FROM tasks WHERE completed = 0`).Scan(&count)
+	return count, err
+}
+
 // joinStrings joins strings with a separator (helper to avoid importing strings package).
 func joinStrings(strs []string, sep string) string {
 	if len(strs) == 0 {

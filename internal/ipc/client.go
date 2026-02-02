@@ -151,3 +151,21 @@ func (c *Client) GetActivities(limit int) (*GetActivitiesResponse, error) {
 	}
 	return &activities, nil
 }
+
+// GetTaskCount retrieves the count of pending (incomplete) tasks
+func (c *Client) GetTaskCount() (int, error) {
+	req := Request{Type: RequestTypeGetTaskCount}
+	resp, err := c.Send(req)
+	if err != nil {
+		return 0, err
+	}
+	if !resp.Success {
+		return 0, fmt.Errorf("get_task_count request failed: %s", resp.Error)
+	}
+
+	var taskCount GetTaskCountResponse
+	if err := json.Unmarshal(resp.Data, &taskCount); err != nil {
+		return 0, fmt.Errorf("failed to parse task count response: %w", err)
+	}
+	return taskCount.Count, nil
+}
