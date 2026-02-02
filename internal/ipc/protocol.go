@@ -19,6 +19,7 @@ const (
 	RequestTypeResurrect     = "resurrect"      // Resurrect the pet after death
 	RequestTypeGetTasks      = "get_tasks"      // Get global task list
 	RequestTypeGetTaskCount  = "get_task_count" // Get pending task count
+	RequestTypeAddTask       = "add_task"       // Add a new task
 )
 
 // Request represents an IPC request message
@@ -112,6 +113,18 @@ type GetTasksResponse struct {
 // GetTaskCountResponse contains the pending task count
 type GetTaskCountResponse struct {
 	Count int `json:"count"` // Number of incomplete tasks
+}
+
+// AddTaskRequest contains parameters for adding a new task
+type AddTaskRequest struct {
+	ProjectPath string `json:"project_path"` // Project directory (empty = use daemon's watch dir)
+	Text        string `json:"text"`         // Task text content
+}
+
+// AddTaskResponse contains the result of adding a task
+type AddTaskResponse struct {
+	Success bool   `json:"success"` // Whether task was added successfully
+	Message string `json:"message"` // Success or error message
 }
 
 // WriteMessage writes a length-prefixed JSON message to the writer

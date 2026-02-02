@@ -169,3 +169,29 @@ func (c *Client) GetTaskCount() (int, error) {
 	}
 	return taskCount.Count, nil
 }
+
+// AddTask adds a new task to the specified project's TASKS.md
+// If projectPath is empty, uses the daemon's watch directory
+func (c *Client) AddTask(projectPath, text string) (*AddTaskResponse, error) {
+	payload, _ := json.Marshal(AddTaskRequest{
+		ProjectPath: projectPath,
+		Text:        text,
+	})
+	req := Request{
+		Type:    RequestTypeAddTask,
+		Payload: payload,
+	}
+	resp, err := c.Send(req)
+	if err != nil {
+		return nil, err
+	}
+	if !resp.Success {
+		return nil, fmt.Errorf("add_task request failed: %s", resp.Error)
+	}
+
+	var addResp AddTaskResponse
+	if err := json.Unmarshal(resp.Data, &addResp); err != nil {
+		return nil, fmt.Errorf("failed to parse add task response: %w", err)
+	}
+	return &addResp, nil
+}

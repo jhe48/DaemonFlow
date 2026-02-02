@@ -25,6 +25,7 @@ type DaemonInterface interface {
 	GetPetLevelInfo() (level, experience, experienceToNext int)
 	GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]TaskData, int, error)
 	GetPendingTaskCount() int
+	AddTask(projectPath, text string) error
 }
 
 // Server handles IPC connections from clients
@@ -157,6 +158,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleGetTasks(req.Payload)
 	case RequestTypeGetTaskCount:
 		resp, err = s.handleGetTaskCount()
+	case RequestTypeAddTask:
+		resp, err = s.handleAddTask(req.Payload)
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -288,4 +291,36 @@ func (s *Server) handleGetTasks(payload json.RawMessage) (*Response, error) {
 func (s *Server) handleGetTaskCount() (*Response, error) {
 	count := s.daemon.GetPendingTaskCount()
 	return NewSuccessResponse(&GetTaskCountResponse{Count: count})
+}
+
+// handleAddTask handles add_task requests
+func (s *Server) handleAddTask(payload json.RawMessage) (*Response, error) {
+	var req AddTaskRequest
+	if payload != nil {
+		if err := json.Unmarshal(payload, &req); err != nil {
+			return NewSuccessResponse(&AddTaskResponse{
+				Success: false,
+				Message: "invalid request payload",
+			})
+		}
+	}
+
+	if req.Text == "" {
+		return NewSuccessResponse(&AddTaskResponse{
+			Success: false,
+			Message: "task text is required",
+		})
+	}
+
+	if err := s.daemon.AddTask(req.ProjectPath, req.Text); err != nil {
+		return NewSuccessResponse(&AddTaskResponse{
+			Success: false,
+			Message: err.Error(),
+		})
+	}
+
+	return NewSuccessResponse(&AddTaskResponse{
+		Success: true,
+		Message: "Task added successfully",
+	})
 }

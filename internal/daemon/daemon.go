@@ -526,6 +526,51 @@ func (d *Daemon) GetPendingTaskCount() int {
 	return count
 }
 
+// AddTask adds a new task to the TASKS.md file in the specified project directory.
+// If projectPath is empty, uses the daemon's watch directory.
+// The file watcher will automatically sync the change to SQLite.
+func (d *Daemon) AddTask(projectPath, text string) error {
+	// Use watch directory if projectPath is empty
+	if projectPath == "" {
+		projectPath = d.GetWatchDir()
+	}
+
+	if projectPath == "" {
+		return fmt.Errorf("no project path specified and no watch directory configured")
+	}
+
+	// Construct TASKS.md path
+	taskFilePath := filepath.Join(projectPath, "TASKS.md")
+
+	// Read existing file content (create with header if not exists)
+	content, err := os.ReadFile(taskFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Create new file with header
+			content = []byte("# Tasks\n\n")
+		} else {
+			return fmt.Errorf("failed to read TASKS.md: %w", err)
+		}
+	}
+
+	// Append new task (ensure proper newline handling)
+	newContent := string(content)
+	if len(newContent) > 0 && newContent[len(newContent)-1] != '\n' {
+		newContent += "\n"
+	}
+	newContent += fmt.Sprintf("- [ ] %s\n", text)
+
+	// Write back to file
+	if err := os.WriteFile(taskFilePath, []byte(newContent), 0644); err != nil {
+		return fmt.Errorf("failed to write TASKS.md: %w", err)
+	}
+
+	log.Printf("Added task to %s: %s", taskFilePath, text)
+
+	// The file watcher will automatically detect this change and sync to SQLite
+	return nil
+}
+
 // GetGlobalTasks returns tasks from all projects, sorted by priority
 func (d *Daemon) GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]ipc.TaskData, int, error) {
 	if d.store == nil {
