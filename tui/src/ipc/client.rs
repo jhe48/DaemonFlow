@@ -143,6 +143,34 @@ impl IpcClient {
         let data = response.data.context("No data in response")?;
         Ok(serde_json::from_value(data)?)
     }
+
+    pub fn get_productivity_streak(&self) -> Result<ProductivityStreakData> {
+        let request = Request {
+            request_type: REQUEST_TYPE_GET_PRODUCTIVITY_STREAK.to_string(),
+            payload: None,
+        };
+        let response = self.send_request(&request)?;
+        if !response.success {
+            bail!("get_productivity_streak failed: {}", response.error.unwrap_or_default());
+        }
+        let data = response.data.context("No data in response")?;
+        let resp: GetProductivityStreakResponse = serde_json::from_value(data)?;
+        Ok(resp.streak)
+    }
+
+    pub fn get_weekly_summary(&self) -> Result<WeeklySummaryData> {
+        let request = Request {
+            request_type: REQUEST_TYPE_GET_WEEKLY_SUMMARY.to_string(),
+            payload: None,
+        };
+        let response = self.send_request(&request)?;
+        if !response.success {
+            bail!("get_weekly_summary failed: {}", response.error.unwrap_or_default());
+        }
+        let data = response.data.context("No data in response")?;
+        let resp: GetWeeklySummaryResponse = serde_json::from_value(data)?;
+        Ok(resp.summary)
+    }
 }
 
 impl Default for IpcClient {
