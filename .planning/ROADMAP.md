@@ -8,7 +8,7 @@ Build a two-process productivity system: a Go daemon ("Heart") that invisibly mo
 
 - ✅ **v1.0 MVP** — Phases 1-8 (shipped 2026-01-21) — [Archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v2.0 Smart Harness** — Phases 9-14 (shipped 2026-01-28) — [Archive](milestones/v2.0-ROADMAP.md)
-- 🚧 **v3.0 Clarity** — Phases 15-20 (in progress)
+- ✅ **v3.0 Clarity** — Phases 15-20 (complete 2026-02-03)
 
 ## Completed Milestones
 
@@ -42,7 +42,7 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 
 </details>
 
-### 🚧 v3.0 Clarity (In Progress)
+### ✅ v3.0 Clarity (Complete 2026-02-03)
 
 **Milestone Goal:** Simple, clear, easy to follow — improve daily interaction and provide visibility into productivity.
 
@@ -100,12 +100,11 @@ Plans:
 
 **Goal**: Desktop alerts for breaks earned, pet status, streak milestones
 **Depends on**: Phase 19
-**Research**: Likely (cross-platform notification libraries)
-**Research topics**: Go notification libraries (beeep, notify), Linux/macOS compatibility
-**Plans**: TBD
+**Research**: Complete (gen2brain/beeep selected)
+**Plans**: 1
 
 Plans:
-- [ ] 20-01: TBD
+- [x] 20-01: Desktop notification system (completed 2026-02-03)
 
 ## Progress
 
@@ -130,4 +129,4 @@ Plans:
 | 17. Analytics Foundation | v3.0 | 1/1 | Complete | 2026-02-03 |
 | 18. Streaks & Summaries | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 19. TUI Dashboard | v3.0 | 1/1 | Complete | 2026-02-03 |
-| 20. Notifications | v3.0 | 0/? | Not started | - |
+| 20. Notifications | v3.0 | 1/1 | Complete | 2026-02-03 |
