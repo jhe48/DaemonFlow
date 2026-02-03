@@ -71,10 +71,10 @@ Plans:
 **Goal**: Track daily stats (tasks completed, time earned/spent, XP gained) in SQLite
 **Depends on**: Phase 16
 **Research**: Unlikely (SQLite already integrated)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 17-01: TBD
+- [x] 17-01: SQLite daily stats foundation (completed 2026-02-03)
 
 #### Phase 18: Streaks & Summaries
 
@@ -127,7 +127,7 @@ Plans:
 | 14. Conflict Resolution & Polish | v2.0 | 3/3 | Complete | 2026-01-28 |
 | 15. Quick-Add CLI | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 16. TUI Task Input | v3.0 | 1/1 | Complete | 2026-02-02 |
-| 17. Analytics Foundation | v3.0 | 0/? | Not started | - |
+| 17. Analytics Foundation | v3.0 | 1/1 | Complete | 2026-02-03 |
 | 18. Streaks & Summaries | v3.0 | 0/? | Not started | - |
 | 19. TUI Dashboard | v3.0 | 0/? | Not started | - |
 | 20. Notifications | v3.0 | 0/? | Not started | - |

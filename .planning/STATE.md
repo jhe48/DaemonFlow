@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 16 of 20 (TUI Task Input)
+Phase: 17 of 20 (Analytics Foundation)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-02 — Completed 16-01-PLAN.md
+Last activity: 2026-02-03 — Completed 17-01-PLAN.md
 
-Progress: ████████████░░░░░░░░ 2/6 v3.0 plans
+Progress: ██████████████░░░░░░ 3/6 v3.0 plans
 
 ## Performance Metrics
 
@@ -22,7 +22,7 @@ Progress: ████████████░░░░░░░░ 2/6 v3.0 
 - Total plans completed: 37 (v1.0 + v2.0 + v3.0)
 - v1.0: 18 plans in 5 days
 - v2.0: 18 plans in 7 days
-- v3.0: 1 plan (in progress)
+- v3.0: 3 plans (in progress)
 
 **By Milestone:**
 
@@ -55,6 +55,11 @@ Phase 16 decisions:
 - File watcher handles TASKS.md to SQLite sync (reuse existing infrastructure)
 - Yellow border indicates active input mode in TUI
 
+Phase 17 decisions:
+- Use YYYY-MM-DD string format for date column in daily_stats
+- Whitelist-validated column names for IncrementDailyStat
+- INSERT OR IGNORE + UPDATE pattern for atomic stat increments
+
 ### Deferred Issues
 
 None.
@@ -71,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-02
-Stopped at: Completed 16-01-PLAN.md (Phase 16 complete)
+Last session: 2026-02-03
+Stopped at: Completed 17-01-PLAN.md (Phase 17 complete)
 Resume file: None
