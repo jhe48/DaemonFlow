@@ -6,7 +6,7 @@ import (
 )
 
 // SchemaVersion is the current database schema version.
-const SchemaVersion = 2
+const SchemaVersion = 3
 
 // Migration represents a database migration.
 type migration struct {
@@ -93,6 +93,29 @@ CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority_score DESC, due_
 
 -- Update schema version
 UPDATE schema_version SET version = 2;
+`,
+	},
+	{
+		version: 3,
+		up: `
+-- Daily stats table for analytics foundation
+CREATE TABLE IF NOT EXISTS daily_stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL UNIQUE,          -- ISO date string (YYYY-MM-DD)
+    tasks_completed INTEGER NOT NULL DEFAULT 0,
+    tasks_created INTEGER NOT NULL DEFAULT 0,
+    commits INTEGER NOT NULL DEFAULT 0,
+    files_changed INTEGER NOT NULL DEFAULT 0,
+    xp_earned INTEGER NOT NULL DEFAULT 0,
+    time_earned_seconds INTEGER NOT NULL DEFAULT 0,
+    time_spent_seconds INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_stats_date ON daily_stats(date DESC);
+
+-- Update schema version
+UPDATE schema_version SET version = 3;
 `,
 	},
 }
