@@ -20,6 +20,7 @@ import (
 	"github.com/jackyhe0402/daemonflow/internal/git"
 	"github.com/jackyhe0402/daemonflow/internal/graveyard"
 	"github.com/jackyhe0402/daemonflow/internal/ipc"
+	"github.com/jackyhe0402/daemonflow/internal/notify"
 	"github.com/jackyhe0402/daemonflow/internal/store"
 	"github.com/jackyhe0402/daemonflow/internal/task"
 	"github.com/jackyhe0402/daemonflow/internal/watcher"
@@ -45,6 +46,7 @@ type Daemon struct {
 	graveyard     *graveyard.Graveyard
 	store         *store.Store
 	brainExecutor *brain.Executor
+	notifier      *notify.Notifier
 	startTime     time.Time
 	shutdownChan  chan struct{}
 
@@ -119,6 +121,14 @@ func (d *Daemon) runForeground() error {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 	d.Config = cfg
+
+	// Create notifier for desktop notifications
+	if cfg.Notifications.Enabled {
+		d.notifier = notify.NewNotifier(cfg.Notifications)
+		log.Printf("Desktop notifications enabled (min gap: %ds)", cfg.Notifications.MinGapSeconds)
+	} else {
+		log.Printf("Desktop notifications disabled")
+	}
 
 	// Create data directory if not exists
 	if err := os.MkdirAll(d.DataDir, 0755); err != nil {

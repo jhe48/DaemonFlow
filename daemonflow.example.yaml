@@ -26,3 +26,15 @@ earning:
     deep_work: 1.5
     meetings: 0.5
     admin: 0.75
+
+# Desktop notifications
+# Alerts for breaks earned, pet status, streak milestones, and level ups
+notifications:
+  enabled: true              # Enable desktop notifications
+  break_earned: true         # Notify when break time is earned (5+ minute thresholds)
+  break_ending: true         # Warn when 1 minute of break remaining
+  pet_warning: true          # Warn when pet is in overtime danger
+  streak_milestone: true     # Celebrate 7, 14, 30, 100 day streaks
+  level_up: true             # Notify on pet level up
+  sound: false               # Use system alert sound (true) or silent (false)
+  min_gap_seconds: 300       # Minimum 5 minutes between same notification type

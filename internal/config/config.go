@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/jackyhe0402/daemonflow/internal/notify"
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,6 +35,9 @@ type Config struct {
 
 	// Earning holds Freedom Clock weights (placeholder for Phase 5)
 	Earning EarningConfig `yaml:"earning"`
+
+	// Notifications holds desktop notification settings
+	Notifications notify.NotifyConfig `yaml:"notifications"`
 }
 
 // GitConfig holds git monitoring settings
@@ -116,6 +120,16 @@ func DefaultConfig() *Config {
 			StageSeconds:        60,  // 1 minute per staging event
 			FileChangeSeconds:   30,  // 30 seconds per file change batch
 			TaskCompleteSeconds: 180, // 3 minutes per task completion
+		},
+		Notifications: notify.NotifyConfig{
+			Enabled:         true,
+			BreakEarned:     true,
+			BreakEnding:     true,
+			PetWarning:      true,
+			StreakMilestone: true,
+			LevelUp:         true,
+			Sound:           false,
+			MinGapSeconds:   300, // 5 minutes between same-type notifications
 		},
 	}
 }
