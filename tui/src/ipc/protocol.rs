@@ -67,6 +67,10 @@ pub struct ResurrectResponse {
 pub const REQUEST_TYPE_GET_TASKS: &str = "get_tasks";
 pub const REQUEST_TYPE_ADD_TASK: &str = "add_task";
 
+// Dashboard types
+pub const REQUEST_TYPE_GET_PRODUCTIVITY_STREAK: &str = "get_productivity_streak";
+pub const REQUEST_TYPE_GET_WEEKLY_SUMMARY: &str = "get_weekly_summary";
+
 #[derive(Debug, Deserialize)]
 pub struct TaskData {
     pub id: i64,
@@ -96,4 +100,74 @@ pub struct AddTaskRequest {
 pub struct AddTaskResponse {
     pub success: bool,
     pub message: String,
+}
+
+// Dashboard types - productivity streak
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProductivityStreakData {
+    #[serde(default)]
+    pub current_streak: i32,
+    #[serde(default)]
+    pub longest_streak: i32,
+    #[serde(default)]
+    pub last_active_date: String,
+    #[serde(default)]
+    pub total_active_days: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetProductivityStreakResponse {
+    pub streak: ProductivityStreakData,
+}
+
+// Dashboard types - daily and weekly summary
+#[derive(Debug, Clone, Deserialize)]
+pub struct DailySummaryData {
+    #[serde(default)]
+    pub date: String,
+    #[serde(default)]
+    pub tasks_completed: i32,
+    #[serde(default)]
+    pub tasks_created: i32,
+    #[serde(default)]
+    pub commits: i32,
+    #[serde(default)]
+    pub files_changed: i32,
+    #[serde(default)]
+    pub xp_earned: i32,
+    #[serde(default)]
+    pub time_earned_mins: i32,
+    #[serde(default)]
+    pub time_spent_mins: i32,
+    #[serde(default)]
+    pub net_time_mins: i32,
+    #[serde(default)]
+    pub is_productive: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct WeeklySummaryData {
+    #[serde(default)]
+    pub week_start: String,
+    #[serde(default)]
+    pub week_end: String,
+    #[serde(default)]
+    pub total_tasks_completed: i32,
+    #[serde(default)]
+    pub total_commits: i32,
+    #[serde(default)]
+    pub total_xp_earned: i32,
+    #[serde(default)]
+    pub total_time_earned_mins: i32,
+    #[serde(default)]
+    pub total_time_spent_mins: i32,
+    #[serde(default)]
+    pub productive_days: i32,
+    #[serde(default)]
+    pub daily_breakdown: Vec<DailySummaryData>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetWeeklySummaryResponse {
+    pub summary: WeeklySummaryData,
 }
