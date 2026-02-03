@@ -27,6 +27,8 @@ type DaemonInterface interface {
 	GetPendingTaskCount() int
 	AddTask(projectPath, text string) error
 	GetDailyStats(date string, days int) ([]DailyStatsData, error)
+	GetProductivityStreak() (*ProductivityStreakData, error)
+	GetWeeklySummary(date string) (*WeeklySummaryData, error)
 }
 
 // Server handles IPC connections from clients
@@ -163,6 +165,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleAddTask(req.Payload)
 	case RequestTypeGetDailyStats:
 		resp, err = s.handleGetDailyStats(req.Payload)
+	case RequestTypeGetProductivityStreak:
+		resp, err = s.handleGetProductivityStreak()
+	case RequestTypeGetWeeklySummary:
+		resp, err = s.handleGetWeeklySummary(req.Payload)
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -344,5 +350,36 @@ func (s *Server) handleGetDailyStats(payload json.RawMessage) (*Response, error)
 
 	return NewSuccessResponse(&GetDailyStatsResponse{
 		Stats: stats,
+	})
+}
+
+// handleGetProductivityStreak handles get_productivity_streak requests
+func (s *Server) handleGetProductivityStreak() (*Response, error) {
+	streak, err := s.daemon.GetProductivityStreak()
+	if err != nil {
+		return NewErrorResponse(err.Error()), nil
+	}
+
+	return NewSuccessResponse(&GetProductivityStreakResponse{
+		Streak: *streak,
+	})
+}
+
+// handleGetWeeklySummary handles get_weekly_summary requests
+func (s *Server) handleGetWeeklySummary(payload json.RawMessage) (*Response, error) {
+	var req GetWeeklySummaryRequest
+	if payload != nil {
+		if err := json.Unmarshal(payload, &req); err != nil {
+			return NewErrorResponse("invalid request payload"), nil
+		}
+	}
+
+	summary, err := s.daemon.GetWeeklySummary(req.Date)
+	if err != nil {
+		return NewErrorResponse(err.Error()), nil
+	}
+
+	return NewSuccessResponse(&GetWeeklySummaryResponse{
+		Summary: *summary,
 	})
 }

@@ -9,18 +9,20 @@ import (
 
 // Request types for IPC communication
 const (
-	RequestTypePing           = "ping"            // Health check
-	RequestTypeStatus         = "status"          // Get daemon status
-	RequestTypeStop           = "stop"            // Request graceful shutdown
-	RequestTypeGetState       = "get_state"       // Get current productivity state (for TUI)
-	RequestTypeGetActivities  = "get_activities"  // Get recent activity events
-	RequestTypeStartBreak     = "start_break"     // Start break mode
-	RequestTypeEndBreak       = "end_break"       // End break mode
-	RequestTypeResurrect      = "resurrect"       // Resurrect the pet after death
-	RequestTypeGetTasks       = "get_tasks"       // Get global task list
-	RequestTypeGetTaskCount   = "get_task_count"  // Get pending task count
-	RequestTypeAddTask        = "add_task"        // Add a new task
-	RequestTypeGetDailyStats  = "get_daily_stats" // Get daily productivity stats
+	RequestTypePing                 = "ping"                   // Health check
+	RequestTypeStatus               = "status"                 // Get daemon status
+	RequestTypeStop                 = "stop"                   // Request graceful shutdown
+	RequestTypeGetState             = "get_state"              // Get current productivity state (for TUI)
+	RequestTypeGetActivities        = "get_activities"         // Get recent activity events
+	RequestTypeStartBreak           = "start_break"            // Start break mode
+	RequestTypeEndBreak             = "end_break"              // End break mode
+	RequestTypeResurrect            = "resurrect"              // Resurrect the pet after death
+	RequestTypeGetTasks             = "get_tasks"              // Get global task list
+	RequestTypeGetTaskCount         = "get_task_count"         // Get pending task count
+	RequestTypeAddTask              = "add_task"               // Add a new task
+	RequestTypeGetDailyStats        = "get_daily_stats"        // Get daily productivity stats
+	RequestTypeGetProductivityStreak = "get_productivity_streak" // Get productivity streak info
+	RequestTypeGetWeeklySummary     = "get_weekly_summary"     // Get weekly summary
 )
 
 // Request represents an IPC request message
@@ -149,6 +151,56 @@ type DailyStatsData struct {
 // GetDailyStatsResponse contains daily stats
 type GetDailyStatsResponse struct {
 	Stats []DailyStatsData `json:"stats"`
+}
+
+// GetWeeklySummaryRequest contains params for weekly summary
+type GetWeeklySummaryRequest struct {
+	Date string `json:"date,omitempty"` // Any date in the week (YYYY-MM-DD), empty = current week
+}
+
+// ProductivityStreakData for IPC transfer (matches store.ProductivityStreak)
+type ProductivityStreakData struct {
+	CurrentStreak   int    `json:"current_streak"`
+	LongestStreak   int    `json:"longest_streak"`
+	LastActiveDate  string `json:"last_active_date"`
+	TotalActiveDays int    `json:"total_active_days"`
+}
+
+// GetProductivityStreakResponse wraps the streak data
+type GetProductivityStreakResponse struct {
+	Streak ProductivityStreakData `json:"streak"`
+}
+
+// DailySummaryData for IPC transfer
+type DailySummaryData struct {
+	Date           string `json:"date"`
+	TasksCompleted int    `json:"tasks_completed"`
+	TasksCreated   int    `json:"tasks_created"`
+	Commits        int    `json:"commits"`
+	FilesChanged   int    `json:"files_changed"`
+	XPEarned       int    `json:"xp_earned"`
+	TimeEarnedMins int    `json:"time_earned_mins"`
+	TimeSpentMins  int    `json:"time_spent_mins"`
+	NetTimeMins    int    `json:"net_time_mins"`
+	IsProductive   bool   `json:"is_productive"`
+}
+
+// WeeklySummaryData for IPC transfer
+type WeeklySummaryData struct {
+	WeekStart           string             `json:"week_start"`
+	WeekEnd             string             `json:"week_end"`
+	TotalTasksCompleted int                `json:"total_tasks_completed"`
+	TotalCommits        int                `json:"total_commits"`
+	TotalXPEarned       int                `json:"total_xp_earned"`
+	TotalTimeEarnedMins int                `json:"total_time_earned_mins"`
+	TotalTimeSpentMins  int                `json:"total_time_spent_mins"`
+	ProductiveDays      int                `json:"productive_days"`
+	DailyBreakdown      []DailySummaryData `json:"daily_breakdown"`
+}
+
+// GetWeeklySummaryResponse wraps the weekly summary
+type GetWeeklySummaryResponse struct {
+	Summary WeeklySummaryData `json:"summary"`
 }
 
 // WriteMessage writes a length-prefixed JSON message to the writer

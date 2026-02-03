@@ -757,6 +757,67 @@ func (d *Daemon) GetDailyStats(date string, days int) ([]ipc.DailyStatsData, err
 	return result, nil
 }
 
+// GetProductivityStreak returns the productivity streak data for IPC.
+func (d *Daemon) GetProductivityStreak() (*ipc.ProductivityStreakData, error) {
+	if d.store == nil {
+		return nil, fmt.Errorf("store not initialized")
+	}
+
+	streak, err := d.store.GetProductivityStreak()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ipc.ProductivityStreakData{
+		CurrentStreak:   streak.CurrentStreak,
+		LongestStreak:   streak.LongestStreak,
+		LastActiveDate:  streak.LastActiveDate,
+		TotalActiveDays: streak.TotalActiveDays,
+	}, nil
+}
+
+// GetWeeklySummary returns the weekly summary data for IPC.
+// If date is empty, returns current week's summary.
+func (d *Daemon) GetWeeklySummary(date string) (*ipc.WeeklySummaryData, error) {
+	if d.store == nil {
+		return nil, fmt.Errorf("store not initialized")
+	}
+
+	summary, err := d.store.GetWeeklySummary(date)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert store.DailySummary slice to ipc.DailySummaryData slice
+	dailyBreakdown := make([]ipc.DailySummaryData, len(summary.DailyBreakdown))
+	for i, day := range summary.DailyBreakdown {
+		dailyBreakdown[i] = ipc.DailySummaryData{
+			Date:           day.Date,
+			TasksCompleted: day.TasksCompleted,
+			TasksCreated:   day.TasksCreated,
+			Commits:        day.Commits,
+			FilesChanged:   day.FilesChanged,
+			XPEarned:       day.XPEarned,
+			TimeEarnedMins: day.TimeEarnedMins,
+			TimeSpentMins:  day.TimeSpentMins,
+			NetTimeMins:    day.NetTimeMins,
+			IsProductive:   day.IsProductive,
+		}
+	}
+
+	return &ipc.WeeklySummaryData{
+		WeekStart:           summary.WeekStart,
+		WeekEnd:             summary.WeekEnd,
+		TotalTasksCompleted: summary.TotalTasksCompleted,
+		TotalCommits:        summary.TotalCommits,
+		TotalXPEarned:       summary.TotalXPEarned,
+		TotalTimeEarnedMins: summary.TotalTimeEarnedMins,
+		TotalTimeSpentMins:  summary.TotalTimeSpentMins,
+		ProductiveDays:      summary.ProductiveDays,
+		DailyBreakdown:      dailyBreakdown,
+	}, nil
+}
+
 // GetRecentActivities returns the most recent N activities
 func (d *Daemon) GetRecentActivities(limit int) []activity.Activity {
 	d.activityMu.RLock()

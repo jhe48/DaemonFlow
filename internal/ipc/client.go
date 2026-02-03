@@ -222,3 +222,47 @@ func (c *Client) GetDailyStats(date string, days int) (*GetDailyStatsResponse, e
 	}
 	return &statsResp, nil
 }
+
+// GetProductivityStreak retrieves the productivity streak data from the daemon.
+func (c *Client) GetProductivityStreak() (*GetProductivityStreakResponse, error) {
+	req := Request{Type: RequestTypeGetProductivityStreak}
+	resp, err := c.Send(req)
+	if err != nil {
+		return nil, err
+	}
+	if !resp.Success {
+		return nil, fmt.Errorf("get_productivity_streak request failed: %s", resp.Error)
+	}
+
+	var streakResp GetProductivityStreakResponse
+	if err := json.Unmarshal(resp.Data, &streakResp); err != nil {
+		return nil, fmt.Errorf("failed to parse productivity streak response: %w", err)
+	}
+	return &streakResp, nil
+}
+
+// GetWeeklySummary retrieves the weekly summary from the daemon.
+// If date is empty, returns current week's summary.
+// Date should be any date in the desired week (YYYY-MM-DD format).
+func (c *Client) GetWeeklySummary(date string) (*GetWeeklySummaryResponse, error) {
+	payload, _ := json.Marshal(GetWeeklySummaryRequest{
+		Date: date,
+	})
+	req := Request{
+		Type:    RequestTypeGetWeeklySummary,
+		Payload: payload,
+	}
+	resp, err := c.Send(req)
+	if err != nil {
+		return nil, err
+	}
+	if !resp.Success {
+		return nil, fmt.Errorf("get_weekly_summary request failed: %s", resp.Error)
+	}
+
+	var summaryResp GetWeeklySummaryResponse
+	if err := json.Unmarshal(resp.Data, &summaryResp); err != nil {
+		return nil, fmt.Errorf("failed to parse weekly summary response: %w", err)
+	}
+	return &summaryResp, nil
+}
