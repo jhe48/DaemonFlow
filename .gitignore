@@ -10,5 +10,10 @@ go.work
 tui/target/
 **/*.rs.bk
 
+# Python
+venv/
+__pycache__/
+*.pyc
+
 # macOS
 .DS_Store
