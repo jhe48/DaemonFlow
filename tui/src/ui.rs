@@ -47,8 +47,12 @@ pub fn render(app: &App, frame: &mut Frame) {
     // Clock status
     render_clock_status(app, frame, chunks[2]);
 
-    // Task list
-    render_tasks(app, frame, chunks[3]);
+    // Task list or Dashboard
+    if app.show_dashboard {
+        render_dashboard(app, frame, chunks[3]);
+    } else {
+        render_tasks(app, frame, chunks[3]);
+    }
 
     // Input box (only in AddingTask mode)
     if in_input_mode {
@@ -63,7 +67,11 @@ pub fn render(app: &App, frame: &mut Frame) {
     } else {
         // Normal mode controls
         let controls = if app.daemon_connected {
-            "q: quit | a: add task | b: toggle break | r: refresh | j/k: scroll tasks"
+            if app.show_dashboard {
+                "q: quit | d: tasks | b: toggle break | r: refresh"
+            } else {
+                "q: quit | d: dashboard | a: add task | b: break | j/k: scroll"
+            }
         } else {
             "q: quit | Daemon not running - start with: daemonflow start"
         };
@@ -270,4 +278,114 @@ fn render_input_box(app: &App, frame: &mut Frame, area: Rect) {
         .block(block);
 
     frame.render_widget(input_widget, area);
+}
+
+/// Format minutes as human-readable time (e.g., 135 -> "2h 15m")
+fn format_time_mins(mins: i32) -> String {
+    let hours = mins / 60;
+    let minutes = mins % 60;
+    if hours > 0 {
+        format!("{}h {}m", hours, minutes)
+    } else {
+        format!("{}m", minutes)
+    }
+}
+
+/// Render the dashboard panel with streak and weekly summary
+fn render_dashboard(app: &App, frame: &mut Frame, area: Rect) {
+    use ratatui::text::{Line, Span};
+
+    let block = Block::default()
+        .title(" Dashboard (d: tasks) ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::Cyan));
+
+    // Check if we have data
+    let weekly = match &app.dashboard_weekly {
+        Some(w) => w,
+        None => {
+            let text = Paragraph::new("Loading...")
+                .style(Style::default().fg(Color::DarkGray))
+                .block(block);
+            frame.render_widget(text, area);
+            return;
+        }
+    };
+
+    // Get streak data (fallback to app's current_streak if dashboard_streak not available)
+    let (current_streak, longest_streak) = match &app.dashboard_streak {
+        Some(s) => (s.current_streak, s.longest_streak),
+        None => (app.current_streak, app.longest_streak),
+    };
+
+    // Format week range (extract just date part from ISO dates)
+    let week_start = if weekly.week_start.len() >= 10 {
+        &weekly.week_start[5..10] // "MM-DD"
+    } else {
+        &weekly.week_start
+    };
+    let week_end = if weekly.week_end.len() >= 10 {
+        &weekly.week_end[5..10]
+    } else {
+        &weekly.week_end
+    };
+
+    // Build lines for dashboard
+    let mut lines: Vec<Line> = Vec::new();
+
+    // Week range
+    lines.push(Line::from(vec![
+        Span::styled("Week: ", Style::default().fg(Color::Cyan)),
+        Span::styled(format!("{} - {}", week_start, week_end), Style::default().fg(Color::White)),
+    ]));
+
+    // Streak info
+    let streak_color = if current_streak > 0 { Color::Green } else { Color::DarkGray };
+    let streak_text = if longest_streak > current_streak {
+        format!("{} days (Best: {})", current_streak, longest_streak)
+    } else {
+        format!("{} days", current_streak)
+    };
+    lines.push(Line::from(vec![
+        Span::styled("Streak: ", Style::default().fg(Color::Cyan)),
+        Span::styled(streak_text, Style::default().fg(streak_color)),
+    ]));
+
+    // Empty line
+    lines.push(Line::from(""));
+
+    // This Week header
+    lines.push(Line::from(Span::styled("This Week:", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))));
+
+    // Stats line 1: Tasks | Commits | XP
+    lines.push(Line::from(vec![
+        Span::styled("  Tasks: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(format!("{}", weekly.total_tasks_completed), Style::default().fg(Color::White)),
+        Span::styled(" | Commits: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(format!("{}", weekly.total_commits), Style::default().fg(Color::White)),
+        Span::styled(" | XP: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(format!("{}", weekly.total_xp_earned), Style::default().fg(Color::Green)),
+    ]));
+
+    // Stats line 2: Time earned/spent
+    let time_earned = format_time_mins(weekly.total_time_earned_mins);
+    let time_spent = format_time_mins(weekly.total_time_spent_mins);
+    lines.push(Line::from(vec![
+        Span::styled("  Time: +", Style::default().fg(Color::DarkGray)),
+        Span::styled(time_earned, Style::default().fg(Color::Green)),
+        Span::styled(" earned | ", Style::default().fg(Color::DarkGray)),
+        Span::styled(time_spent, Style::default().fg(Color::Yellow)),
+        Span::styled(" spent", Style::default().fg(Color::DarkGray)),
+    ]));
+
+    // Productive days
+    lines.push(Line::from(vec![
+        Span::styled("  Productive: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(format!("{}/7 days", weekly.productive_days), Style::default().fg(Color::White)),
+    ]));
+
+    let widget = Paragraph::new(lines)
+        .block(block);
+
+    frame.render_widget(widget, area);
 }
