@@ -21,23 +21,31 @@ You earn guilt-free break time through productive work. If you slack off, the cl
   Status: HEALTHY
   Earned: 15:30
   Streak: 3 days
+  Level: 3 (450 XP)
+```
 
-   HEALTHY:        RESTING:        TIRED:          DECAYING:       DEAD:
-                      zzz            !             
-     /\_/\          /\_/\          /\_/\          ' /\_/\ '        _____
-    ( o.o )        ( -.- )        ( o_o )          ( x_x )        |     |
-     > ^ <          > ~ <          > ~ <            > ~ <         | RIP |
-    /|   |\        /|   |\        /|   |\          /|   |\        |     |
-   (_|   |_)      (_|   |_)      (_|   |_)        (_|___|_)       |_____|
+### Pet Evolution
 
+Your pet evolves as you gain XP through productive work:
+
+```
+   Level 1          Level 2          Level 3          Level 4          Level 5
+   Kitten           Young Cat        Adult Cat        Wise Cat         Royal Cat
+                                                                          /\
+    /\_/\            /\_/\            /\_/\            /\_/\            /||\
+   ( o.o )          ( o.o )         =( o.o )=        =( o.o )=          /\_/\
+    > ^ <            > ^ <           >[   ]<          >[:::]<         =( o.o )=
+      |             /|   |\         /|     |\        /|     |\         [=*=*=]
+                   (_|   |_)       (_|     |_)      (_|     |_)        /|   |\
 ```
 
 ## How It Works
 
 1. **Work** - The daemon detects Git commits, staged changes, file saves, and task completions
-2. **Earn** - Each activity earns break time (configurable: commits = 5 min, file changes = 30 sec, etc.)
+2. **Earn** - Each activity earns break time and XP (configurable: commits = 5 min, file changes = 30 sec, etc.)
 3. **Break** - Start a break and the clock counts down. Your pet rests.
-4. **Consequences** - Run out of time? 5 minutes of overtime kills your pet. It's logged forever, but you can resurrect and get back to work.
+4. **Level Up** - Gain XP to evolve your pet through 5 levels
+5. **Consequences** - Run out of time? 5 minutes of overtime kills your pet. It's logged forever, but you can resurrect and get back to work.
 
 ## Installation
 
@@ -45,6 +53,7 @@ You earn guilt-free break time through productive work. If you slack off, the cl
 
 - Go 1.21+
 - Rust 1.70+
+- Python 3.10+ (optional, for recurring task parsing)
 
 ### Build
 
@@ -64,6 +73,9 @@ cd tui && cargo build --release
 # Start monitoring in background
 ./daemonflow start
 
+# Start in foreground (see logs)
+./daemonflow start -f
+
 # Check daemon status
 ./daemonflow status
 
@@ -72,6 +84,17 @@ cd tui && cargo build --release
 
 # Stop the daemon
 ./daemonflow stop
+```
+
+### Quick-Add Tasks
+
+Add tasks directly from your terminal without opening the TUI:
+
+```bash
+# Add a simple task
+./daemonflow add "Fix the authentication bug"
+
+# Tasks are added to your TASKS.md and synced to SQLite
 ```
 
 ### Launch the TUI
@@ -87,6 +110,8 @@ cd tui && cargo run --release
 | Key | Action |
 |-----|--------|
 | `b` | Toggle break mode (blocked when pet is dead) |
+| `a` | Add new task inline |
+| `d` | Toggle dashboard (stats view) |
 | `x` | Resurrect dead pet |
 | `r` | Refresh/reconnect to daemon |
 | `q` | Quit |
@@ -96,7 +121,12 @@ cd tui && cargo run --release
 Create `~/.daemonflow/config.yaml`:
 
 ```yaml
-# Directory to monitor (defaults to current directory)
+# Directories to monitor (supports multiple)
+watch_dirs:
+  - "/path/to/project1"
+  - "/path/to/project2"
+
+# Or single directory (backward compatible)
 watch_dir: "/path/to/your/project"
 
 # Logging level (debug, info, warn, error)
@@ -123,6 +153,17 @@ watcher:
     - ".git/**"
     - "node_modules/**"
     - "*.log"
+
+# Desktop notifications
+notifications:
+  enabled: true
+  break_earned: true      # Notify when break time earned
+  break_ending: true      # Warn when 1 minute left in break
+  pet_warning: true       # Alert when pet is in overtime danger
+  streak_milestone: true  # Celebrate streak milestones (7, 14, 30, 100 days)
+  level_up: true          # Notify on pet level up
+  sound: false            # Play system sound with notifications
+  min_gap_seconds: 300    # Minimum gap between same-type notifications
 ```
 
 ## Task Tracking
@@ -137,7 +178,26 @@ Create a markdown file with checkbox tasks in your `watch_dir`:
 - [ ] Update documentation
 ```
 
-When you check off a task (`[ ]` to `[x]`), you earn break time.
+When you check off a task (`[ ]` to `[x]`), you earn break time and XP.
+
+### Recurring Tasks
+
+DaemonFlow supports natural language recurring tasks:
+
+```markdown
+- [ ] Review PRs every weekday
+- [ ] Weekly team sync every Monday at 10am
+- [ ] Monthly report on the 1st
+```
+
+## Dashboard
+
+Press `d` in the TUI to view your productivity dashboard:
+
+- **Today's Stats**: Tasks completed, commits, XP earned
+- **Current Streak**: Days without pet death
+- **Weekly Summary**: Productivity overview
+- **Time Balance**: Break time earned vs spent
 
 ## The Graveyard
 
@@ -178,6 +238,7 @@ All DaemonFlow data is stored in `~/.daemonflow/`:
 | File | Purpose |
 |------|---------|
 | `config.yaml` | Your configuration (create this) |
+| `daemonflow.db` | SQLite database (tasks, stats, streaks) |
 | `daemonflow.pid` | Process ID of running daemon |
 | `daemonflow.sock` | Unix socket for IPC |
 | `GRAVEYARD.md` | Death and resurrection records |
@@ -191,14 +252,27 @@ All DaemonFlow data is stored in `~/.daemonflow/`:
 | - Git monitor   |                           | - ASCII pet     |
 | - File watcher  |                           | - Clock display |
 | - Task tracker  |                           | - Streak info   |
-| - Freedom clock |                           |                 |
-| - Graveyard     |                           |                 |
+| - Freedom clock |                           | - Dashboard     |
+| - Graveyard     |                           | - Task input    |
+| - Notifications |                           |                 |
+| - SQLite store  |                           |                 |
 +-----------------+                           +-----------------+
         |
         v
   ~/.daemonflow/
   +-- config.yaml
+  +-- daemonflow.db
   +-- daemonflow.pid
   +-- daemonflow.sock
   +-- GRAVEYARD.md
 ```
+
+## Version History
+
+- **v3.0** - Quick-add CLI, TUI task input, analytics dashboard, streaks, notifications
+- **v2.0** - SQLite storage, recurring tasks, pet evolution, multi-project sync
+- **v1.0** - Core daemon, TUI, pet system, graveyard
+
+## License
+
+MIT
