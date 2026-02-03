@@ -180,14 +180,14 @@ pub const LEVEL_4_DECAYING: &str = r#"
 
 /// Level 5 healthy: Royal cat with crown.
 pub const LEVEL_5_HEALTHY: &str = r#"
-      /\
-     /||\
+     /\
+    /||\
      /\_/\
-   =( o.o )=
-    [=*=*=]
-    /|   |\
+     =( o.o )=
+   [=*=*=]
+   /|   |\
    / |   | \
-  (___|   |___)
+   (___|   |___)
 "#;
 
 /// Level 5 resting: Royal cat sleeping.
