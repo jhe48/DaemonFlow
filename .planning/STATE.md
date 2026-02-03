@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 17 of 20 (Analytics Foundation)
+Phase: 18 of 20 (Streaks & Summaries)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-03 — Completed 17-01-PLAN.md
+Last activity: 2026-02-02 — Completed 18-01-PLAN.md
 
-Progress: ██████████████░░░░░░ 3/6 v3.0 plans
+Progress: ████████████████░░░░ 4/6 v3.0 plans
 
 ## Performance Metrics
 
@@ -60,6 +60,11 @@ Phase 17 decisions:
 - Whitelist-validated column names for IncrementDailyStat
 - INSERT OR IGNORE + UPDATE pattern for atomic stat increments
 
+Phase 18 decisions:
+- Productive day = tasks_completed > 0 OR commits > 0 OR xp_earned > 0
+- Week boundaries use Monday-Sunday (Go time.Weekday() based calculation)
+- Current streak counts from today backwards, falls back to yesterday if today not productive
+
 ### Deferred Issues
 
 None.
@@ -76,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-03
-Stopped at: Completed 17-01-PLAN.md (Phase 17 complete)
+Last session: 2026-02-02
+Stopped at: Completed 18-01-PLAN.md (Phase 18 complete)
 Resume file: None

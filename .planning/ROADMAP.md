@@ -81,10 +81,10 @@ Plans:
 **Goal**: Track productivity streaks and generate daily/weekly summaries
 **Depends on**: Phase 17
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 18-01: TBD
+- [x] 18-01: Streaks and summaries implementation (completed 2026-02-02)
 
 #### Phase 19: TUI Dashboard
 
@@ -128,6 +128,6 @@ Plans:
 | 15. Quick-Add CLI | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 16. TUI Task Input | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 17. Analytics Foundation | v3.0 | 1/1 | Complete | 2026-02-03 |
-| 18. Streaks & Summaries | v3.0 | 0/? | Not started | - |
+| 18. Streaks & Summaries | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 19. TUI Dashboard | v3.0 | 0/? | Not started | - |
 | 20. Notifications | v3.0 | 0/? | Not started | - |
