@@ -38,6 +38,14 @@ type Clock struct {
 	// OnDeath is called when the pet dies from extended overtime
 	// Parameters: overtimeSeconds (negative), sessionEarned (positive)
 	OnDeath func(overtimeSeconds int, sessionEarned int)
+
+	// OnBreakEnding is called when 1 minute of break time remaining
+	// Parameter: secondsLeft (should be 60)
+	OnBreakEnding func(secondsLeft int)
+
+	// OnOvertimeWarning is called at -180 seconds (3 minutes into overtime, 2 min before death)
+	// Parameter: overtimeSeconds (negative)
+	OnOvertimeWarning func(overtimeSeconds int)
 }
 
 // NewClock creates a new Clock with the given earning configuration
@@ -82,6 +90,10 @@ func (c *Clock) tick() {
 	case StateBreak:
 		// In break state, decrement earned seconds
 		c.earnedSeconds--
+		// Notify when 1 minute remaining
+		if c.earnedSeconds == 60 && c.OnBreakEnding != nil {
+			go c.OnBreakEnding(60)
+		}
 		// Transition to overtime when time runs out
 		if c.earnedSeconds <= 0 {
 			c.state = StateOvertime
@@ -89,6 +101,11 @@ func (c *Clock) tick() {
 	case StateOvertime:
 		// In overtime, continue decrementing (goes negative)
 		c.earnedSeconds--
+		// Warning at -180 seconds (3 minutes into overtime, 2 min before death)
+		if c.earnedSeconds == -180 && c.OnOvertimeWarning != nil {
+			overtimeSeconds := c.earnedSeconds
+			go c.OnOvertimeWarning(overtimeSeconds)
+		}
 		// Check for death threshold
 		if c.earnedSeconds <= DeathThresholdSeconds && !c.deathTriggered {
 			c.deathTriggered = true

@@ -53,6 +53,10 @@ type Daemon struct {
 	// Activity tracking
 	recentActivities []activity.Activity
 	activityMu       sync.RWMutex
+
+	// Notification state tracking
+	lastBreakNotifyEarned int // Last total earned when break notification was sent
+	lastNotifiedStreak    int // Last streak milestone notified
 }
 
 // New creates a new Daemon instance with default paths
@@ -173,7 +177,7 @@ func (d *Daemon) runForeground() error {
 	// Create and start Freedom Clock
 	d.clock = clock.NewClock(&d.Config.Earning)
 
-	// Wire death callback to log deaths to graveyard and sync to SQLite
+	// Wire death callback to log deaths to graveyard, sync to SQLite, and notify
 	d.clock.OnDeath = func(overtimeSeconds int, sessionEarned int) {
 		record := graveyard.DeathRecord{
 			Timestamp:       time.Now(),
@@ -191,6 +195,25 @@ func (d *Daemon) runForeground() error {
 		}
 		// Sync graveyard stats to SQLite after death
 		d.syncGraveyardToStore()
+
+		// Send pet died notification
+		if d.notifier != nil {
+			d.notifier.PetDied()
+		}
+	}
+
+	// Wire break ending callback for 1-minute warning notification
+	d.clock.OnBreakEnding = func(secondsLeft int) {
+		if d.notifier != nil {
+			d.notifier.BreakEnding(secondsLeft)
+		}
+	}
+
+	// Wire overtime warning callback for pet danger notification
+	d.clock.OnOvertimeWarning = func(overtimeSeconds int) {
+		if d.notifier != nil {
+			d.notifier.PetWarning(overtimeSeconds)
+		}
 	}
 
 	// Initial sync of graveyard stats to SQLite
@@ -646,6 +669,9 @@ func (d *Daemon) OnActivity(act activity.Activity) {
 	// Forward to Freedom Clock for earning calculation
 	if d.clock != nil {
 		d.clock.OnActivity(act)
+
+		// Check if break earned notification should be sent (every 5 minutes of total earned)
+		d.checkBreakEarnedNotification()
 	}
 
 	// Award XP based on activity type
@@ -653,7 +679,7 @@ func (d *Daemon) OnActivity(act activity.Activity) {
 }
 
 // awardXPForActivity awards experience points based on activity type.
-// Also records daily stats for analytics.
+// Also records daily stats for analytics and sends notifications for level ups.
 // XP values:
 //   - Commit: 10 XP
 //   - Stage: 2 XP
@@ -665,11 +691,13 @@ func (d *Daemon) awardXPForActivity(act activity.Activity) {
 	}
 
 	var xpAmount int
+	var checkStreak bool
 	switch act.Type {
 	case activity.GitCommit:
 		xpAmount = 10
 		d.recordDailyStat("commits", 1)
 		d.recordDailyStat("xp_earned", 10)
+		checkStreak = true // Commits can affect streak
 	case activity.GitStage:
 		xpAmount = 2
 		d.recordDailyStat("xp_earned", 2)
@@ -681,16 +709,31 @@ func (d *Daemon) awardXPForActivity(act activity.Activity) {
 		xpAmount = 5
 		d.recordDailyStat("tasks_completed", 1)
 		d.recordDailyStat("xp_earned", 5)
+		checkStreak = true // Task completions can affect streak
 	default:
 		return // No XP for other activity types (e.g., branch switch)
 	}
 
 	if xpAmount > 0 {
+		// Get level before XP award for level up detection
+		oldLevel, _, _ := d.GetPetLevelInfo()
+
 		if _, err := d.store.AddExperience(xpAmount); err != nil {
 			log.Printf("Warning: failed to award XP for %s: %v", act.Type, err)
 		} else {
 			log.Printf("Awarded %d XP for %s", xpAmount, act.Type)
+
+			// Check for level up and send notification
+			newLevel, _, _ := d.GetPetLevelInfo()
+			if newLevel > oldLevel && d.notifier != nil {
+				d.notifier.LevelUp(newLevel)
+			}
 		}
+	}
+
+	// Check streak milestone after activities that affect productivity
+	if checkStreak {
+		d.checkStreakMilestone()
 	}
 }
 
@@ -1013,6 +1056,45 @@ func (d *Daemon) syncGraveyardToStore() {
 	} else {
 		log.Printf("Synced graveyard stats: streak=%d/%d, deaths=%d, resurrections=%d",
 			streakInfo.CurrentStreak, streakInfo.LongestStreak, totalDeaths, totalResurrections)
+	}
+}
+
+// checkBreakEarnedNotification sends break earned notification when crossing 5-minute thresholds.
+// Called from OnActivity after clock processes the activity.
+func (d *Daemon) checkBreakEarnedNotification() {
+	if d.notifier == nil || d.clock == nil {
+		return
+	}
+
+	currentTotal := d.clock.GetSessionEarned()
+	threshold := 300 // 5 minutes in seconds
+
+	// Check if we crossed a new 5-minute threshold
+	if currentTotal/threshold > d.lastBreakNotifyEarned/threshold {
+		d.lastBreakNotifyEarned = currentTotal
+		d.notifier.BreakEarned(currentTotal / 60)
+	}
+}
+
+// checkStreakMilestone checks if current streak is a milestone and sends notification.
+// Milestones: 7, 14, 30, 100 days
+func (d *Daemon) checkStreakMilestone() {
+	if d.store == nil || d.notifier == nil {
+		return
+	}
+
+	streak, err := d.store.GetProductivityStreak()
+	if err != nil || streak == nil {
+		return
+	}
+
+	milestones := []int{7, 14, 30, 100}
+	for _, m := range milestones {
+		if streak.CurrentStreak == m && d.lastNotifiedStreak != m {
+			d.lastNotifiedStreak = m
+			d.notifier.StreakMilestone(m)
+			break
+		}
 	}
 }
 
