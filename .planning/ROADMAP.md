@@ -91,10 +91,10 @@ Plans:
 **Goal**: Stats panel in TUI showing productivity at a glance
 **Depends on**: Phase 18
 **Research**: Unlikely (ratatui patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 19-01: TBD
+- [x] 19-01: Dashboard panel implementation (completed 2026-02-03)
 
 #### Phase 20: Notifications
 
@@ -129,5 +129,5 @@ Plans:
 | 16. TUI Task Input | v3.0 | 1/1 | Complete | 2026-02-02 |
 | 17. Analytics Foundation | v3.0 | 1/1 | Complete | 2026-02-03 |
 | 18. Streaks & Summaries | v3.0 | 1/1 | Complete | 2026-02-02 |
-| 19. TUI Dashboard | v3.0 | 0/? | Not started | - |
+| 19. TUI Dashboard | v3.0 | 1/1 | Complete | 2026-02-03 |
 | 20. Notifications | v3.0 | 0/? | Not started | - |

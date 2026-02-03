@@ -9,20 +9,20 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 18 of 20 (Streaks & Summaries)
+Phase: 19 of 20 (TUI Dashboard)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-02 — Completed 18-01-PLAN.md
+Last activity: 2026-02-03 — Completed 19-01-PLAN.md
 
-Progress: ████████████████░░░░ 4/6 v3.0 plans
+Progress: ██████████████████░░ 5/6 v3.0 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 37 (v1.0 + v2.0 + v3.0)
+- Total plans completed: 38 (v1.0 + v2.0 + v3.0)
 - v1.0: 18 plans in 5 days
 - v2.0: 18 plans in 7 days
-- v3.0: 3 plans (in progress)
+- v3.0: 5 plans (in progress)
 
 **By Milestone:**
 
@@ -65,6 +65,11 @@ Phase 18 decisions:
 - Week boundaries use Monday-Sunday (Go time.Weekday() based calculation)
 - Current streak counts from today backwards, falls back to yesterday if today not productive
 
+Phase 19 decisions:
+- Dashboard toggles with 'd' key, shares space with task list
+- Time displayed as human-readable format (2h 15m) instead of raw minutes
+- Fallback to StateResponse streak data if dashboard-specific fetch fails
+
 ### Deferred Issues
 
 None.
@@ -81,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-02
-Stopped at: Completed 18-01-PLAN.md (Phase 18 complete)
+Last session: 2026-02-03
+Stopped at: Completed 19-01-PLAN.md (Phase 19 complete)
 Resume file: None
