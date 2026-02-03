@@ -195,3 +195,30 @@ func (c *Client) AddTask(projectPath, text string) (*AddTaskResponse, error) {
 	}
 	return &addResp, nil
 }
+
+// GetDailyStats retrieves daily productivity stats from the daemon.
+// If days > 0, returns last N days. If date is specified, returns that date.
+// If both empty, returns today's stats.
+func (c *Client) GetDailyStats(date string, days int) (*GetDailyStatsResponse, error) {
+	payload, _ := json.Marshal(GetDailyStatsRequest{
+		Date: date,
+		Days: days,
+	})
+	req := Request{
+		Type:    RequestTypeGetDailyStats,
+		Payload: payload,
+	}
+	resp, err := c.Send(req)
+	if err != nil {
+		return nil, err
+	}
+	if !resp.Success {
+		return nil, fmt.Errorf("get_daily_stats request failed: %s", resp.Error)
+	}
+
+	var statsResp GetDailyStatsResponse
+	if err := json.Unmarshal(resp.Data, &statsResp); err != nil {
+		return nil, fmt.Errorf("failed to parse daily stats response: %w", err)
+	}
+	return &statsResp, nil
+}

@@ -26,6 +26,7 @@ type DaemonInterface interface {
 	GetGlobalTasks(limit int, includeCompleted bool, projectPath string) ([]TaskData, int, error)
 	GetPendingTaskCount() int
 	AddTask(projectPath, text string) error
+	GetDailyStats(date string, days int) ([]DailyStatsData, error)
 }
 
 // Server handles IPC connections from clients
@@ -160,6 +161,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp, err = s.handleGetTaskCount()
 	case RequestTypeAddTask:
 		resp, err = s.handleAddTask(req.Payload)
+	case RequestTypeGetDailyStats:
+		resp, err = s.handleGetDailyStats(req.Payload)
 	default:
 		resp = NewErrorResponse(fmt.Sprintf("unknown request type: %s", req.Type))
 	}
@@ -322,5 +325,24 @@ func (s *Server) handleAddTask(payload json.RawMessage) (*Response, error) {
 	return NewSuccessResponse(&AddTaskResponse{
 		Success: true,
 		Message: "Task added successfully",
+	})
+}
+
+// handleGetDailyStats handles get_daily_stats requests
+func (s *Server) handleGetDailyStats(payload json.RawMessage) (*Response, error) {
+	var req GetDailyStatsRequest
+	if payload != nil {
+		if err := json.Unmarshal(payload, &req); err != nil {
+			return NewErrorResponse("invalid request payload"), nil
+		}
+	}
+
+	stats, err := s.daemon.GetDailyStats(req.Date, req.Days)
+	if err != nil {
+		return NewErrorResponse(err.Error()), nil
+	}
+
+	return NewSuccessResponse(&GetDailyStatsResponse{
+		Stats: stats,
 	})
 }

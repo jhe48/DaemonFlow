@@ -643,6 +643,7 @@ func (d *Daemon) OnActivity(act activity.Activity) {
 }
 
 // awardXPForActivity awards experience points based on activity type.
+// Also records daily stats for analytics.
 // XP values:
 //   - Commit: 10 XP
 //   - Stage: 2 XP
@@ -657,12 +658,19 @@ func (d *Daemon) awardXPForActivity(act activity.Activity) {
 	switch act.Type {
 	case activity.GitCommit:
 		xpAmount = 10
+		d.recordDailyStat("commits", 1)
+		d.recordDailyStat("xp_earned", 10)
 	case activity.GitStage:
 		xpAmount = 2
+		d.recordDailyStat("xp_earned", 2)
 	case activity.FileChange:
 		xpAmount = 1
+		d.recordDailyStat("files_changed", 1)
+		d.recordDailyStat("xp_earned", 1)
 	case activity.TaskComplete:
 		xpAmount = 5
+		d.recordDailyStat("tasks_completed", 1)
+		d.recordDailyStat("xp_earned", 5)
 	default:
 		return // No XP for other activity types (e.g., branch switch)
 	}
@@ -674,6 +682,79 @@ func (d *Daemon) awardXPForActivity(act activity.Activity) {
 			log.Printf("Awarded %d XP for %s", xpAmount, act.Type)
 		}
 	}
+}
+
+// recordDailyStat increments a daily stat column for today's date.
+// Logs errors but doesn't fail (non-critical operation).
+func (d *Daemon) recordDailyStat(statType string, amount int) {
+	if d.store == nil {
+		return
+	}
+
+	today := time.Now().UTC().Format("2006-01-02")
+	if err := d.store.IncrementDailyStat(today, statType, amount); err != nil {
+		log.Printf("Warning: failed to record daily stat %s: %v", statType, err)
+	}
+}
+
+// RecordTimeEarned records time earned to daily stats.
+// Called when activity earns freedom time.
+func (d *Daemon) RecordTimeEarned(seconds int) {
+	d.recordDailyStat("time_earned_seconds", seconds)
+}
+
+// RecordTimeSpent records time spent (break time) to daily stats.
+// Called when break time is consumed.
+func (d *Daemon) RecordTimeSpent(seconds int) {
+	d.recordDailyStat("time_spent_seconds", seconds)
+}
+
+// GetDailyStats returns daily stats for a specific date or recent days.
+// If days > 0, returns last N days. Otherwise returns stats for the specified date.
+// If date is empty and days == 0, returns today's stats.
+func (d *Daemon) GetDailyStats(date string, days int) ([]ipc.DailyStatsData, error) {
+	if d.store == nil {
+		return nil, fmt.Errorf("store not initialized")
+	}
+
+	var stats []store.DailyStats
+	var err error
+
+	if days > 0 {
+		stats, err = d.store.GetRecentDailyStats(days)
+	} else {
+		if date == "" {
+			date = time.Now().UTC().Format("2006-01-02")
+		}
+		stat, err := d.store.GetDailyStats(date)
+		if err != nil {
+			return nil, err
+		}
+		if stat != nil {
+			stats = []store.DailyStats{*stat}
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to IPC format
+	result := make([]ipc.DailyStatsData, len(stats))
+	for i, s := range stats {
+		result[i] = ipc.DailyStatsData{
+			Date:              s.Date,
+			TasksCompleted:    s.TasksCompleted,
+			TasksCreated:      s.TasksCreated,
+			Commits:           s.Commits,
+			FilesChanged:      s.FilesChanged,
+			XPEarned:          s.XPEarned,
+			TimeEarnedSeconds: s.TimeEarnedSeconds,
+			TimeSpentSeconds:  s.TimeSpentSeconds,
+		}
+	}
+
+	return result, nil
 }
 
 // GetRecentActivities returns the most recent N activities

@@ -9,17 +9,18 @@ import (
 
 // Request types for IPC communication
 const (
-	RequestTypePing          = "ping"           // Health check
-	RequestTypeStatus        = "status"         // Get daemon status
-	RequestTypeStop          = "stop"           // Request graceful shutdown
-	RequestTypeGetState      = "get_state"      // Get current productivity state (for TUI)
-	RequestTypeGetActivities = "get_activities" // Get recent activity events
-	RequestTypeStartBreak    = "start_break"    // Start break mode
-	RequestTypeEndBreak      = "end_break"      // End break mode
-	RequestTypeResurrect     = "resurrect"      // Resurrect the pet after death
-	RequestTypeGetTasks      = "get_tasks"      // Get global task list
-	RequestTypeGetTaskCount  = "get_task_count" // Get pending task count
-	RequestTypeAddTask       = "add_task"       // Add a new task
+	RequestTypePing           = "ping"            // Health check
+	RequestTypeStatus         = "status"          // Get daemon status
+	RequestTypeStop           = "stop"            // Request graceful shutdown
+	RequestTypeGetState       = "get_state"       // Get current productivity state (for TUI)
+	RequestTypeGetActivities  = "get_activities"  // Get recent activity events
+	RequestTypeStartBreak     = "start_break"     // Start break mode
+	RequestTypeEndBreak       = "end_break"       // End break mode
+	RequestTypeResurrect      = "resurrect"       // Resurrect the pet after death
+	RequestTypeGetTasks       = "get_tasks"       // Get global task list
+	RequestTypeGetTaskCount   = "get_task_count"  // Get pending task count
+	RequestTypeAddTask        = "add_task"        // Add a new task
+	RequestTypeGetDailyStats  = "get_daily_stats" // Get daily productivity stats
 )
 
 // Request represents an IPC request message
@@ -125,6 +126,29 @@ type AddTaskRequest struct {
 type AddTaskResponse struct {
 	Success bool   `json:"success"` // Whether task was added successfully
 	Message string `json:"message"` // Success or error message
+}
+
+// GetDailyStatsRequest contains parameters for getting daily stats
+type GetDailyStatsRequest struct {
+	Date string `json:"date,omitempty"` // Specific date (YYYY-MM-DD), or empty for today
+	Days int    `json:"days,omitempty"` // If > 0, get last N days instead of single date
+}
+
+// DailyStatsData represents daily stats for IPC transfer
+type DailyStatsData struct {
+	Date              string `json:"date"`
+	TasksCompleted    int    `json:"tasks_completed"`
+	TasksCreated      int    `json:"tasks_created"`
+	Commits           int    `json:"commits"`
+	FilesChanged      int    `json:"files_changed"`
+	XPEarned          int    `json:"xp_earned"`
+	TimeEarnedSeconds int    `json:"time_earned_seconds"`
+	TimeSpentSeconds  int    `json:"time_spent_seconds"`
+}
+
+// GetDailyStatsResponse contains daily stats
+type GetDailyStatsResponse struct {
+	Stats []DailyStatsData `json:"stats"`
 }
 
 // WriteMessage writes a length-prefixed JSON message to the writer
