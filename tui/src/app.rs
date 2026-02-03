@@ -4,7 +4,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use ratatui::prelude::*;
 
 use crate::ipc::client::IpcClient;
-use crate::ipc::protocol::{StateResponse, TaskData};
+use crate::ipc::protocol::{StateResponse, TaskData, ProductivityStreakData, WeeklySummaryData};
 use crate::pet::Pet;
 
 const UPDATE_INTERVAL: Duration = Duration::from_millis(500);
@@ -38,6 +38,10 @@ pub struct App {
     // Input mode for task entry
     pub input_mode: InputMode,
     pub input_buffer: String,
+    // Dashboard view
+    pub dashboard_streak: Option<ProductivityStreakData>,
+    pub dashboard_weekly: Option<WeeklySummaryData>,
+    pub show_dashboard: bool,
 }
 
 impl App {
@@ -63,6 +67,9 @@ impl App {
             task_scroll: 0,
             input_mode: InputMode::Normal,
             input_buffer: String::new(),
+            dashboard_streak: None,
+            dashboard_weekly: None,
+            show_dashboard: false,
         };
 
         // If connected, get initial state
@@ -97,9 +104,23 @@ impl App {
                 self.daemon_connected = false;
             }
         }
-        // Also update tasks
+        // Also update tasks and dashboard
         self.update_tasks();
+        self.update_dashboard();
         self.last_update = Instant::now();
+    }
+
+    pub fn update_dashboard(&mut self) {
+        if self.daemon_connected {
+            // Fetch productivity streak (ignore errors - non-critical data)
+            if let Ok(streak) = self.ipc_client.get_productivity_streak() {
+                self.dashboard_streak = Some(streak);
+            }
+            // Fetch weekly summary (ignore errors - non-critical data)
+            if let Ok(summary) = self.ipc_client.get_weekly_summary() {
+                self.dashboard_weekly = Some(summary);
+            }
+        }
     }
 
     pub fn update_tasks(&mut self) {
@@ -240,6 +261,10 @@ impl App {
                                         if self.task_scroll > 0 {
                                             self.task_scroll = self.task_scroll.saturating_sub(1);
                                         }
+                                    }
+                                    KeyCode::Char('d') => {
+                                        // Toggle dashboard view
+                                        self.show_dashboard = !self.show_dashboard;
                                     }
                                     _ => {}
                                 }
