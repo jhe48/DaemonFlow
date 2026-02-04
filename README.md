@@ -31,12 +31,24 @@ Your pet evolves as you gain XP through productive work:
 ```
    Level 1          Level 2          Level 3          Level 4          Level 5
    Kitten           Young Cat        Adult Cat        Wise Cat         Royal Cat
-                                                                          /\
+                                                                         /\
     /\_/\            /\_/\            /\_/\            /\_/\            /||\
    ( o.o )          ( o.o )         =( o.o )=        =( o.o )=          /\_/\
     > ^ <            > ^ <           >[   ]<          >[:::]<         =( o.o )=
       |             /|   |\         /|     |\        /|     |\         [=*=*=]
                    (_|   |_)       (_|     |_)      (_|     |_)        /|   |\
+```
+
+Your pet has 5 states at every stage:
+
+```
+   HEALTHY:        RESTING:        TIRED:          DECAYING:       DEAD:
+                      zzz            !             
+     /\_/\          /\_/\          /\_/\          ' /\_/\ '        _____
+    ( o.o )        ( -.- )        ( o_o )          ( x_x )        |     | 
+     > ^ <          > ~ <          > ~ <            > ~ <         | RIP |
+    /|   |\        /|   |\        /|   |\          /|   |\        |     |
+   (_|   |_)      (_|   |_)      (_|   |_)        (_|___|_)       |_____|
 ```
 
 ## How It Works
@@ -272,7 +284,3 @@ All DaemonFlow data is stored in `~/.daemonflow/`:
 - **v3.0** - Quick-add CLI, TUI task input, analytics dashboard, streaks, notifications
 - **v2.0** - SQLite storage, recurring tasks, pet evolution, multi-project sync
 - **v1.0** - Core daemon, TUI, pet system, graveyard
-
-## License
-
-MIT
