@@ -281,6 +281,7 @@ All DaemonFlow data is stored in `~/.daemonflow/`:
 
 ## Version History
 
-- **v3.0** - Quick-add CLI, TUI task input, analytics dashboard, streaks, notifications
-- **v2.0** - SQLite storage, recurring tasks, pet evolution, multi-project sync
+
 - **v1.0** - Core daemon, TUI, pet system, graveyard
+- **v2.0** - SQLite storage, recurring tasks, pet evolution, multi-project sync
+- **v3.0** - Quick-add CLI, TUI task input, analytics dashboard, streaks, notifications
