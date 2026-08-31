@@ -1,6 +1,6 @@
 # DaemonFlow
 
-A high-stakes productivity system for terminal-heavy developers. Work earns freedom; slack kills pets.
+A high-stakes productivity system for terminal-heavy developers. Work earns freedom; procrastination kills pets.
 
 ## Overview
 
